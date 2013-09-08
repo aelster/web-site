@@ -1,2 +1,3 @@
 *.komodo*
 local_*.php
+.DS_store

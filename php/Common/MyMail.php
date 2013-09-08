@@ -2,7 +2,10 @@
 
 global $mail_admin;
 global $mail_enabled;
+global $mail_from;
+global $mail_live;
 global $mail_servers;
+global $mail_transport;
 
 function MyMail( $message ) {
 	$trace = $GLOBALS['gTrace'];
@@ -15,13 +18,16 @@ function MyMail( $message ) {
 	static $mailer;
 	static $logger;
   	
-	if( empty( $GLOBL['mail_enabled'] ) ) {
-		echo "** Mail service for this application is not enabled, update your local settings<br>";
+	if( empty( $GLOBALS['mail_enabled'] ) ) {
+		echo "** Mail service for this application is not enabled, please use \$mail_enabled in your local settings<br>";
 		exit;
+	}
+	if( empty( $GLOBALS['mail_admin'] ) ) {
+		echo "** Mail administrator required, please use \$mail_admin in your local settings<br>";
 	}
 	if( empty( $ms ) ) {
 		if( count( $GLOBALS['mail_servers'] ) == 0 ) {
-			echo "** no Mail Servers defined, update you local settings<br>";
+			echo "** no Mail Servers defined, please use \$mail_servers in your local settings<br>";
 			exit;
 		}
 		$ms = array_shift( $GLOBALS['mail_servers'] );
@@ -30,17 +36,23 @@ function MyMail( $message ) {
 	
 	if( ! $ms['connected'] ) {
 		if( $debug ) {
-			printf( "MyMail:  Connecting to server: [%s], port: [%d]<br>",
-					 $ms['server'], $ms['port'] );
+			printf( "MyMail:  Connecting to server: [%s], port: [%d], transport: [%s]<br>",
+					 $ms['server'], $ms['port'], $ms['transport'] );
 		}
-		$transport = Swift_SmtpTransport::newInstance();
-		$transport->setHost($ms['server']);
-		$transport->setPort($ms['port']);
-		if( isset( $ms['encr'] ) ) $transport->setEncryption($ms['encr']);
-		if( isset( $ms['user'] ) ) { # a login is required
-			$transport->setUsername( $ms['user'] );
-			$transport->setPassword( $ms['pass'] );
+
+		if( $GLOBALS['mail_transport'] == "smtp" ) {
+			$transport = Swift_SmtpTransport::newInstance();
+			$transport->setHost($ms['server']);
+			$transport->setPort($ms['port']);
+			if( isset( $ms['encr'] ) ) $transport->setEncryption($ms['encr']);
+			if( isset( $ms['user'] ) ) { # a login is required
+				$transport->setUsername( $ms['user'] );
+				$transport->setPassword( $ms['pass'] );
+			}
+		} elseif( $GLOBALS['mail_transport'] == "sendmail" ) {
+			$transport = Swift_SendmailTransport::newInstance('/usr/sbin/sendmail -bs');
 		}
+		
 		$mailer = Swift_Mailer::newInstance( $transport );
 		if( $debug ) $logger = new Swift_Plugins_Loggers_EchoLogger();
 		$mailer->registerPlugin(new Swift_Plugins_AntiFloodPlugin(100,30));
@@ -55,7 +67,17 @@ function MyMail( $message ) {
 		echo "logger #1:";
 #		echo $logger->dump();
 	}
-		
+	
+	if( ! $GLOBALS['mail_live'] ) {
+		$message->setTo( $GLOBALS['mail_admin'] );
+		$message->setCc( array() );
+		$message->setBcc( array() );
+	}
+
+	if( ! empty( $GLOBALS['mail_from'] ) ) {
+		$message->setFrom( $GLOBALS['mail_from'] );
+	}
+	
 	$result = $mailer->send($message,$failures);
 
 	if( $debug ) {
@@ -64,7 +86,6 @@ function MyMail( $message ) {
 #		echo $logger->dump();	
 	}
 	
-	echo "result: $result<br>";	
 	if( ! $result ) 
 	{
 		if($debug) echo "error<br>";

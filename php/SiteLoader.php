@@ -34,8 +34,10 @@ function SiteLoad( $library )
 	$d = dir( $path );
 	while( false !== ( $file = $d->read()))
 	{
-		list ( $name, $ext ) = preg_split( "/\./", $file );
+		$tmp = preg_split( "/\./", $file );
+		$ext = array_pop( $tmp );
 		if( $ext == "php" ) {
+			$name = join( '.', $tmp );
 			if( preg_match( "/^local_/", $name ) ) continue;
 			$str = $path . DIRECTORY_SEPARATOR . $file;
 			require_once( $str );

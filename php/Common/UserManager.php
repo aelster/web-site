@@ -267,7 +267,7 @@ function UserManagerDisplay()
 		$vlevels[ $name ] = $level;
 	}
 	
-	foreach( $gAccessLevels as $level )
+	foreach( $GLOBALS['gAccessLevels'] as $level )
 	{
 		if( ! UserManagerAuthorized($level) ) continue;
 		$i = 0;
