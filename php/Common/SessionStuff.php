@@ -4,7 +4,7 @@ function SessionStuff( $cmd )
 {
 	$trace = $GLOBALS['gTrace'];
 	if( $trace ) {
-		$GLOBALS['gFunction'][] = "SessionStuff()";
+		$GLOBALS['gFunction'][] = __FUNCTION__;
 		Logger();
 	}
 	$debug = $GLOBALS['gDebug'];

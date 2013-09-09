@@ -544,16 +544,17 @@ function UserManagerLogin()
 	<td>Username:</td>
 	<td><input type="text" name="username" id="username" tabindex=1 value="<?php echo $def_user ?>" size="16" onkeydown="getPassword(event);"></td>
 	<?php if( ! empty( $GLOBALS['gMessage1'] ) ) { echo "<td class=msg>" . $GLOBALS['gMessage1'] . "</td>"; }?>
+	<td>&nbsp;</td>
 </tr>
 <tr>
 	<td>Password:</td>
 	<td><input type="password" name="userpass" id="userpass" tabindex=2 value="" size="16" onkeydown="keyDown(event);"></td>
 	<?php if( ! empty( $GLOBALS['gMessage2'] ) ) { echo "<td class=msg>" . $GLOBALS['gMessage2'] . "</td>"; }?>
+	<td><input type=submit value="Reset Password" tabindex=5 onclick="addAction( 'Reset Password' );"></td>
 </tr>
 <tr>
-	<td colspan=2 align=center>
+	<td colspan=3 align=center>
 		<input type=submit value=Login tabindex=4 id=login onclick="doChallengeResponse();">
-		<input type=submit value="Reset Password" tabindex=5 onclick="addAction( 'Reset Password' );">
 	</td>
 </tr>
 </table>

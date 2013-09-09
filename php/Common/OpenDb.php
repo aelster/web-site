@@ -14,7 +14,7 @@ function OpenDb(
 	) {
 	$trace = $GLOBALS['gTrace'];
 	if( $trace ) {
-		$GLOBALS['gFunction'][] = "OpenDb()";
+		$GLOBALS['gFunction'][] = __FUNCTION__;
 		Logger();
 	}
 	

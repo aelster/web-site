@@ -2,7 +2,7 @@
 function DumpPostVars() {
 	$trace = $GLOBALS['gTrace'];
 	if( $trace ) {
-		$GLOBALS['gFunction'][] = "DumpPostVars()";
+		$GLOBALS['gFunction'][] = __FUNCTION__;
 		Logger();
 	}
 

@@ -3,7 +3,7 @@ function AddOverlib()
 {
 	$trace = $GLOBALS['gTrace'];
 	if( $trace ) {
-		$GLOBALS['gFunction'][] = "AddOverlib()";
+		$GLOBALS['gFunction'][] = __FUNCTION__;
 		Logger();
 	}
 ?>

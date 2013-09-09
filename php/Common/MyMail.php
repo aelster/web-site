@@ -10,7 +10,7 @@ global $mail_transport;
 function MyMail( $message ) {
 	$trace = $GLOBALS['gTrace'];
 	if( $trace ) {
-		$GLOBALS['gFunction'][] = "MyMail()";
+		$GLOBALS['gFunction'][] = __FUNCTION__;
 		Logger();
 	}
 	$debug = $GLOBALS[ 'gDebug' ];

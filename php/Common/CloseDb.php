@@ -2,7 +2,7 @@
 function CloseDb() {
 	$trace = $GLOBALS['gTrace'];
 	if( $trace ) {
-		$GLOBALS['gFunction'][] = "CloseDb()";
+		$GLOBALS['gFunction'][] = __FUNCTION__;
 		Logger();
 	}
 	mysql_close( $GLOBALS['mysql_db'] );
