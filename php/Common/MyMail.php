@@ -40,7 +40,7 @@ function MyMail( $message ) {
 					 $ms['server'], $ms['port'], $ms['transport'] );
 		}
 
-		if( $GLOBALS['mail_transport'] == "smtp" ) {
+		if( $ms['transport'] == "smtp" ) {
 			$transport = Swift_SmtpTransport::newInstance();
 			$transport->setHost($ms['server']);
 			$transport->setPort($ms['port']);
@@ -49,7 +49,7 @@ function MyMail( $message ) {
 				$transport->setUsername( $ms['user'] );
 				$transport->setPassword( $ms['pass'] );
 			}
-		} elseif( $GLOBALS['mail_transport'] == "sendmail" ) {
+		} elseif( $ms['transport'] == "sendmail" ) {
 			$transport = Swift_SendmailTransport::newInstance('/usr/sbin/sendmail -bs');
 		}
 		
