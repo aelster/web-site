@@ -209,6 +209,7 @@ function SourceDisplaySub( $dir ) {
 		if( preg_match( "/\.dbg$/", $file ) ) continue;
       if( preg_match( '/\.ini$/', $file ) ) continue;
 		if( preg_match( "/kpf$/", $file ) ) continue;
+		if( preg_match( "/ste$/", $file ) ) continue;
 		if( preg_match( "/^_/", $file ) ) continue;
 		if( preg_match( "/komodoproject$/", $file ) ) continue;
 		if( preg_match( "/swp$/", $file ) ) continue;

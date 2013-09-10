@@ -550,11 +550,11 @@ function UserManagerLogin()
 	<td>Password:</td>
 	<td><input type="password" name="userpass" id="userpass" tabindex=2 value="" size="16" onkeydown="keyDown(event);"></td>
 	<?php if( ! empty( $GLOBALS['gMessage2'] ) ) { echo "<td class=msg>" . $GLOBALS['gMessage2'] . "</td>"; }?>
-	<td><input type=submit value="Reset Password" tabindex=5 onclick="addAction( 'Reset Password' );"></td>
+	<td><input type=button value="Reset Password" tabindex=9 onclick="addAction( 'Reset Password' );"></td>
 </tr>
 <tr>
 	<td colspan=3 align=center>
-		<input type=submit value=Login tabindex=4 id=login onclick="doChallengeResponse();">
+		<input type=submit value=Login tabindex=4 name=login id=login onclick="doChallengeResponse();">
 	</td>
 </tr>
 </table>
