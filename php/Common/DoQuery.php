@@ -1,5 +1,6 @@
 <?php
 
+global $mysql_last_id;
 global $mysql_numrows;
 global $mysql_result;
 
@@ -8,7 +9,8 @@ function DoQuery()
 	$num_args = func_num_args();
 	$query = func_get_arg( 0 );
 	$db = ( $num_args == 1 ) ? $GLOBALS[ 'mysql_db' ] : func_get_arg( 1 );
-	
+	$last_id = 0;	
+
 	$debug = $GLOBALS[ 'gDebug' ];
 	$support = $GLOBALS['mysql_admin'];
 	
@@ -28,6 +30,11 @@ function DoQuery()
 		{
 			$numrows = mysql_num_rows( $result );
 		}
+		elseif( preg_match( "/^insert/i", $query ) )
+		{
+			$numrows = mysql_affected_rows( $db );
+			$last_id = mysql_insert_id();
+		}
 		else
 		{
 			$numrows = mysql_affected_rows( $db );
@@ -37,6 +44,7 @@ function DoQuery()
 	
  	if( $debug ) Logger( $dmsg );
  
+	$GLOBALS[ 'mysql_last_id' ] = $last_id;
 	$GLOBALS[ 'mysql_numrows' ] = $numrows;
 	$GLOBALS[ 'mysql_result' ] = $result;
 }
