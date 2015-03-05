@@ -897,7 +897,7 @@ function UserManagerReset()
 #
 	$challenge = SHA256::hash(uniqid(mt_rand(), true));
 	$query = "insert into challenge_record (sess_id, challenge, timestamp)";
-	$query .= " values ('". session_id() ."', '". $challenge ."', ". (time() + 60*5) . ")";
+	$query .= " values ('". session_id() ."', '". $challenge ."', ". (time() + 60*15) . ")";
 	DoQuery( $query );
 #
 # Display the login
