@@ -218,6 +218,7 @@ function SourceDisplaySub( $dir ) {
 		if( preg_match( "/error_log/", $file ) ) continue;
 		if( preg_match( "/favicon.png/", $file ) ) continue;
 		if( preg_match( "/andyMyAdmin/", $file ) ) continue;
+		if( preg_match( "/.sql$/", $file ) ) continue;
 		if( preg_match( "/^local/", $file ) ) continue;
 		if( preg_match( "/^.publish/", $file ) ) continue;
 		if( preg_match( "/~$/", $file ) ) continue;
