@@ -101,9 +101,11 @@ function MyMail( $message ) {
 			$msg->setBody($body,'text/html');
 			$msg->setFrom( $GLOBALS['mail_admin'] );
 			$mailer->send($msg);
+			return 0;
 		}
 	} else {
 		if( $debug ) echo "sent ok<br>";
+		return 1;
 	}
 	
 	if( $trace ) array_pop( $GLOBALS['gFunction'] );
