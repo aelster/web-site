@@ -1207,7 +1207,7 @@ function UserManagerUpdate()
 		
 		if( $func == "modify" ) {
 			$done = array();
-			$pids = preg_split('/,/', $_POST['fields']);
+			$pids = preg_split('/,/', $_POST['fields'], NULL, PREG_SPLIT_NO_EMPTY );
 			foreach( $pids as $pid ) {
 				if( ! empty( $pid ) ) {
 					if( array_key_exists( $pid, $done ) ) continue;
@@ -1247,7 +1247,7 @@ function UserManagerUpdate()
 
 	if( $area == "update" ) {
 		$done = array();
-		$uids = preg_split( '/,/', $_POST['fields'] );
+		$uids = preg_split( '/,/', $_POST['fields'], NULL, PREG_SPLIT_NO_EMPTY );
 		foreach( $uids as $uid ) {
 			if( ! empty( $uid ) ) {
 				if( array_key_exists( $uid, $done ) ) continue;
