@@ -55,7 +55,7 @@ function MyMail( $message ) {
 		
 		$mailer = Swift_Mailer::newInstance( $transport );
 		if( $debug ) $logger = new Swift_Plugins_Loggers_EchoLogger();
-		$mailer->registerPlugin(new Swift_Plugins_AntiFloodPlugin(50,5));
+		$mailer->registerPlugin(new Swift_Plugins_AntiFloodPlugin(100,20));
 		if( $debug ) $mailer->registerPlugin(new Swift_Plugins_LoggerPlugin($logger));
 		$ms['connected'] = 1;
 	} else {
