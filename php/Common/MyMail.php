@@ -55,7 +55,7 @@ function MyMail( $message ) {
 		
 		$mailer = Swift_Mailer::newInstance( $transport );
 		if( $debug ) $logger = new Swift_Plugins_Loggers_EchoLogger();
-		$mailer->registerPlugin(new Swift_Plugins_AntiFloodPlugin(100,20));
+		$mailer->registerPlugin(new Swift_Plugins_AntiFloodPlugin(500,20));
 		if( $debug ) $mailer->registerPlugin(new Swift_Plugins_LoggerPlugin($logger));
 		$ms['connected'] = 1;
 	} else {
@@ -81,10 +81,12 @@ function MyMail( $message ) {
 	$result = $mailer->send($message,$failures);
 
 	if( $debug ) {
-		echo "MyMail> after send<br>";
+		echo "MyMail> after send, sent $result<br>";
 		echo "logger #2:";
 #		echo $logger->dump();	
 	}
+	
+	$retval = 0;
 	
 	if( ! $result ) 
 	{
@@ -101,13 +103,14 @@ function MyMail( $message ) {
 			$msg->setBody($body,'text/html');
 			$msg->setFrom( $GLOBALS['mail_admin'] );
 			$mailer->send($msg);
-			return 0;
+			$retval = 0;
 		}
 	} else {
 		if( $debug ) echo "sent ok<br>";
-		return 1;
+		$retval = 1;
 	}
 	
 	if( $trace ) array_pop( $GLOBALS['gFunction'] );
+	return $retval;
 }
 ?>
