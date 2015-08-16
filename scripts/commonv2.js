@@ -11,19 +11,10 @@ function _init()
 
 function addAction(cmd)
 {
-	if( cmd == 'Mail' ) {
-		var e = document.getElementById('addr_list');
-		var str;
-		str = 'mailto:';
-//		str += document.getElementById('my_email').value;
-		str += '?bcc=' + e.value + '&Subject=Tarbut Board';
-		window.top.mail = window.open(str, 'mail');
-	} else {
-		var e = document.getElementById( 'action' ); 
-		if( ! e ) alert( "can't find element[ action ]" );
-		e.value = cmd;
-		document.fMain.submit();
-	}
+    var e = document.getElementById( 'action' ); 
+    if( ! e ) alert( "can't find element[ action ]" );
+    e.value = cmd;
+    document.fMain.submit();
 }
 
 function addField( id ) {
