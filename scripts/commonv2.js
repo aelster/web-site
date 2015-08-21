@@ -26,6 +26,15 @@ function addField( id ) {
 		e.value += ',' + id;
 	}
 }
+
+function clearDebugWindow() {
+    if( debug_disabled ) { return; }
+    if (window.top.debugWindow && ! window.top.debugWindow.closed) {
+	window.top.debugWindow.close();
+	createDebugWindow();
+    }
+}
+
 function createDebugWindow() {
 	if( debug_disabled ) { return; }
 	if( window.top.debugWindow ) {
@@ -65,12 +74,13 @@ function DumpHtml()
 }
 
 function debug(text) {
+    var str;
     if (window.top.debugWindow && ! window.top.debugWindow.closed) {;
-		var str;
-		for( var i=0; i < arguments.length; i++ )
-		{
-			str += arguments[i];
-		}
+	str = '--------\n';
+	for( var i=0; i < arguments.length; i++ )
+	    {
+		str += arguments[i];
+	    }
         window.top.debugWindow.document.write(str+"\n");
     }
 }
