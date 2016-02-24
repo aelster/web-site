@@ -24,7 +24,7 @@ function DirTree($dir, $index_required) {
 			if( preg_match( '/^phpMyAdmin/', $file ) ) continue;
 			if( preg_match( '/^andyMyAdmin/', $file ) ) continue;
 			if( preg_match( '/^phpmanual/', $file ) ) continue;
-         if( preg_match( '/images/', $file ) ) continue;
+			if( preg_match( '/images/', $file ) ) continue;
 			if( preg_match( '/^fpdf/', $file ) ) continue;
 			$t = $thisdir . DIRECTORY_SEPARATOR . $file;
 			if( preg_match( '/site$/', $file ) ) $dirs[] = $t;
@@ -134,17 +134,17 @@ function SourceDisplay() {
 	$ps = PATH_SEPARATOR;
 	$dirs = preg_split( "/$ps/", $str );
 	foreach( $dirs as $path ) {
-		if( $path == "." ) continue;
-		if( preg_match( '/Swift/', $path ) ) continue;
-		if( preg_match( '/fpdf/', $path ) ) continue;
-      if( preg_match( '/usr\/lib/', $path ) ) continue;
-      if( preg_match( '/usr\/local\/lib/', $path ) ) continue;
-		$tmp = DirTree( $path, 0 );
-		sort( $tmp );
-		foreach( $tmp as $dir ) {
-			if( preg_match( '/overlib/', $dir ) ) continue;
-			SourceDisplaySub( $dir );
-		}
+	  if( $path == "." ) continue;
+	  if( preg_match( '/swift/i', $path ) ) continue;
+	  if( preg_match( '/fpdf/i', $path ) ) continue;
+	  if( preg_match( '/usr\/lib/', $path ) ) continue;
+	  if( preg_match( '/usr\/local\/lib/', $path ) ) continue;
+	  $tmp = DirTree( $path, 0 );
+	  sort( $tmp );
+	  foreach( $tmp as $dir ) {
+		 if( preg_match( '/overlib/', $dir ) ) continue;
+		 SourceDisplaySub( $dir );
+	  }
 	}
 
 	$path = '/usr/local/site';
