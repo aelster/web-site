@@ -25,6 +25,7 @@ function DirTree($dir, $index_required) {
 			if( preg_match( '/^andyMyAdmin/', $file ) ) continue;
 			if( preg_match( '/^phpmanual/', $file ) ) continue;
 			if( preg_match( '/images/', $file ) ) continue;
+			if( preg_match( '/^wp-/i', $file ) ) continue;
 			if( preg_match( '/^fpdf/', $file ) ) continue;
 			$t = $thisdir . DIRECTORY_SEPARATOR . $file;
 			if( preg_match( '/site$/', $file ) ) $dirs[] = $t;
