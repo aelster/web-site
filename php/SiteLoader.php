@@ -1,17 +1,14 @@
 <?php
 
-global $gDebug;
-global $gFunction;
-global $gSiteLoaded;
-global $gTrace;
-
-$gDebug = 0;
-$gFunction = array();
-$gSiteLoaded = array();
-$gTrace = 0;
+$path = dirname( __FILE__ ) . '/Common/globals.php';
+if( file_exists( $path ) ) {
+	require $path;
+}
 
 function SiteLoad( $library )
 {
+	global $gSiteLoadLibraries;
+	
 	$pathArray = explode( PATH_SEPARATOR, get_include_path() );
 
 	$found = 0;
@@ -46,6 +43,7 @@ function SiteLoad( $library )
 			}
 		}
 	}
-	$GLOBALS['gSiteLoaded'][] = $library;
+	
+	$gSiteLoadLibraries[] = $library;
 }
 ?>
