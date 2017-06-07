@@ -1,39 +1,37 @@
 <?php
 
-global $gMasterSum;
-
 function DirTree($dir, $index_required) {
    $path = '';
    $stack[] = $dir;
-	$dirs = array();
+   $dirs = array();
    while ($stack) {
-       $thisdir = array_pop($stack);
-		 if( ! is_dir( $thisdir ) ) continue;
-       $tmp = scandir($thisdir);
-		 if( $index_required ) {
-			if( preg_grep( '/index.htm/', $tmp ) || preg_grep( '/index.php/', $tmp ) )  {
-				$dirs[] = $thisdir;
-			}
-		 } else {
+	  $thisdir = array_pop($stack);
+	  if( ! is_dir( $thisdir ) ) continue;
+	  $tmp = scandir($thisdir);
+	  if( $index_required ) {
+		 if( preg_grep( '/index.htm/', $tmp ) || preg_grep( '/index.php/', $tmp ) )  {
 			$dirs[] = $thisdir;
 		 }
-		 foreach( $tmp as $file ) {
-			if( $file == "." || $file == ".." ) continue;
-			if( preg_match( '/^\./', $file ) ) continue;
-			if( preg_match( '/^_/', $file ) ) continue;
-			if( preg_match( '/^phpMyAdmin/', $file ) ) continue;
-			if( preg_match( '/^andyMyAdmin/', $file ) ) continue;
-			if( preg_match( '/^phpmanual/', $file ) ) continue;
-			if( preg_match( '/images/', $file ) ) continue;
-			if( preg_match( '/^wp-/i', $file ) ) continue;
-			if( preg_match( '/^fpdf/', $file ) ) continue;
-			$t = $thisdir . DIRECTORY_SEPARATOR . $file;
-			if( preg_match( '/site$/', $file ) ) $dirs[] = $t;
-			if( is_dir( $t ) ) {
-				$stack[] = $t;
-			}
+	  } else {
+		 $dirs[] = $thisdir;
+	  }
+	  foreach( $tmp as $file ) {
+		 if( $file == "." || $file == ".." ) continue;
+		 if( preg_match( '/^\./', $file ) ) continue;
+		 if( preg_match( '/^_/', $file ) ) continue;
+		 if( preg_match( '/^phpMyAdmin/', $file ) ) continue;
+		 if( preg_match( '/^andyMyAdmin/', $file ) ) continue;
+		 if( preg_match( '/^phpmanual/', $file ) ) continue;
+		 if( preg_match( '/images/', $file ) ) continue;
+		 if( preg_match( '/^wp-/i', $file ) ) continue;
+		 if( preg_match( '/^fpdf/', $file ) ) continue;
+		 $t = $thisdir . DIRECTORY_SEPARATOR . $file;
+		 if( preg_match( '/site$/', $file ) ) $dirs[] = $t;
+		 if( is_dir( $t ) ) {
+			$stack[] = $t;
 		 }
-	}
+	  }
+   }
    return $dirs;
 }
 
@@ -84,9 +82,7 @@ function SourceCleanPath($path) {
 }
 
 function SourceDisplay() {
-	$trace = $GLOBALS['gTrace'];
-   $debug = $GLOBALS['gDebug'];
-	if( $trace ) {
+	if( $GLOBALS['gTrace'] ) {
 		$GLOBALS['gFunction'][] = __FUNCTION__;
 		Logger();
 	}
@@ -171,19 +167,18 @@ function SourceDisplay() {
 	echo "Total files: $tot_files";
 	
 	echo sprintf( "<script type=\"text/javascript\">setHtml('master_sum','%s');</script>", dechex( $GLOBALS['gMasterSum'] ) );	
-	if( $trace ) array_pop( $GLOBALS['gFunction'] );
+	if( $GLOBALS['gTrace'] ) array_pop( $GLOBALS['gFunction'] );
 }
 
 function SourceDisplaySub( $dir ) {
-	$trace = $GLOBALS['gTrace'];
-	if( $trace ) {
+	if( $GLOBALS['gTrace'] ) {
 		$GLOBALS['gFunction'][] = __FUNCTION__;
 		Logger();
 	}
 	global $n, $tot_files, $already_scanned, $web_base, $local_base;
 	
 	if( ! empty( $already_scanned[$dir] ) ) {
-      if( $trace ) array_pop( $GLOBALS['gFunction'] );
+      if( $GLOBALS['gTrace'] ) array_pop( $GLOBALS['gFunction'] );
       return;
    }
 	$already_scanned[$dir] = 1;
@@ -316,7 +311,7 @@ function SourceDisplaySub( $dir ) {
 		$GLOBALS['gMasterSum'] += $hsum;
 	}
 	
-	if( $trace ) array_pop( $GLOBALS['gFunction'] );
+	if( $GLOBALS['gTrace'] ) array_pop( $GLOBALS['gFunction'] );
 }
 
 ?>

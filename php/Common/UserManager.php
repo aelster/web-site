@@ -19,8 +19,7 @@ global $gUserVerified;
 
 
 function UserManager() {	
-	$trace = $GLOBALS['gTrace'];
-	if( $trace ) {
+	if( $GLOBALS['gTrace'] ) {
 		$GLOBALS['gFunction'][] = __FUNCTION__;
 		Logger();
 	}
@@ -93,14 +92,13 @@ function UserManager() {
 			break;
 	}
 	
-	if( $trace ) array_pop( $GLOBALS['gFunction'] );
+	if( $GLOBALS['gTrace'] ) array_pop( $GLOBALS['gFunction'] );
 	if( $area == 'authorized' ) return $auth;
 }
 
 function UserManagerActivate( $new_val )
 {
-	$trace = $GLOBALS['gTrace'];
-	if( $trace ) {
+	if( $GLOBALS['gTrace'] ) {
 		$GLOBALS['gFunction'][] = __FUNCTION__;
 		Logger();
 	}
@@ -120,13 +118,12 @@ function UserManagerActivate( $new_val )
 	$query = join( ",", $text );
 	DoQuery( $query );
 
-	if( $trace ) array_pop( $GLOBALS['gFunction'] );
+	if( $GLOBALS['gTrace'] ) array_pop( $GLOBALS['gFunction'] );
 }
 
 function UserManagerAdd()
 {
-	$trace = $GLOBALS['gTrace'];
-	if( $trace ) {
+	if( $GLOBALS['gTrace'] ) {
 		$GLOBALS['gFunction'][] = __FUNCTION__;
 		Logger();
 	}
@@ -156,13 +153,12 @@ function UserManagerAdd()
 		DoQuery( $query );
 	}
 	
-	if( $trace ) array_pop( $GLOBALS['gFunction'] );
+	if( $GLOBALS['gTrace'] ) array_pop( $GLOBALS['gFunction'] );
 }
 
 function UserManagerAuthorized( $privilege )
 {
-	$trace = $GLOBALS['gTrace'];
-	if( $trace ) {
+	if( $GLOBALS['gTrace'] ) {
 		$GLOBALS['gFunction'][] = __FUNCTION__;
 		Logger();
 	}
@@ -171,14 +167,13 @@ function UserManagerAuthorized( $privilege )
 	$ok = ( $level >= $GLOBALS['gAccessNameToLevel'][ $privilege ] ) ? 1 : 0;
 	$ok = $ok && $GLOBALS['gAccessLevelEnabled'][ $level ];
 	
-	if( $trace ) array_pop( $GLOBALS['gFunction'] );
+	if( $GLOBALS['gTrace'] ) array_pop( $GLOBALS['gFunction'] );
 	return $ok;
 }
 
 function UserManagerControl()
 {
-	$trace = $GLOBALS['gTrace'];
-	if( $trace ) {
+	if( $GLOBALS['gTrace'] ) {
 		$GLOBALS['gFunction'][] = __FUNCTION__;
 		Logger();
 	}
@@ -202,13 +197,12 @@ function UserManagerControl()
 
 	$_POST[ 'btn_action' ] = NULL;
 	
-	if( $trace ) array_pop( $GLOBALS['gFunction'] );
+	if( $GLOBALS['gTrace'] ) array_pop( $GLOBALS['gFunction'] );
 }
 
 function UserManagerDelete()
 {
-	$trace = $GLOBALS['gTrace'];
-	if( $trace ) {
+	if( $GLOBALS['gTrace'] ) {
 		$GLOBALS['gFunction'][] = __FUNCTION__;
 		Logger();
 	}
@@ -232,13 +226,12 @@ function UserManagerDelete()
 	DoQuery( "delete from access where userid = '$id'" );
 	DoQuery( "delete from grades where userid = '$id'" );
 	
-	if( $trace ) array_pop( $GLOBALS[ 'gFunction' ] );
+	if( $GLOBALS['gTrace'] ) array_pop( $GLOBALS[ 'gFunction' ] );
 }
 
 function UserManagerDisplay()
 {
-	$trace = $GLOBALS['gTrace'];
-	if( $trace ) {
+	if( $GLOBALS['gTrace'] ) {
 		$GLOBALS['gFunction'][] = __FUNCTION__;
 		Logger();
 	}
@@ -378,13 +371,12 @@ function UserManagerDisplay()
 	echo "</tr>";
 	
 	echo "</div>";
-	if( $trace ) array_pop( $GLOBALS['gFunction'] );
+	if( $GLOBALS['gTrace'] ) array_pop( $GLOBALS['gFunction'] );
 }
 
 function UserManagerEdit()
 {
-	$trace = $GLOBALS['gTrace'];
-	if( $trace ) {
+	if( $GLOBALS['gTrace'] ) {
 		$GLOBALS['gFunction'][] = __FUNCTION__;
 		Logger();
 	}
@@ -419,14 +411,13 @@ function UserManagerEdit()
 	echo "<input type=submit name=action value=Back>";
 	echo "<input type=button onclick=\"setValue( 'id', '$id'); setValue( 'btn_action', 'Update' ); addAction('Update');\" value=Update>";
 		
-	if( $trace ) array_pop( $GLOBALS['gFunction'] );
+	if( $GLOBALS['gTrace'] ) array_pop( $GLOBALS['gFunction'] );
 
 }
 
 function UserManagerInactive()
 {
-	$trace = $GLOBALS['gTrace'];
-	if( $trace ) {
+	if( $GLOBALS['gTrace'] ) {
 		$GLOBALS['gFunction'][] = __FUNCTION__;
 		Logger();
 	}
@@ -449,13 +440,12 @@ function UserManagerInactive()
 	echo "<br><br>";
 	echo "<input type=submit name=action value=Logout>";
 	
-	if( $trace ) array_pop( $GLOBALS['gFunction'] );
+	if( $GLOBALS['gTrace'] ) array_pop( $GLOBALS['gFunction'] );
 }
 
 function UserManagerInit()
 {
-	$trace = $GLOBALS['gTrace'];
-	if( $trace ) {
+	if( $GLOBALS['gTrace'] ) {
 		$GLOBALS['gFunction'][] = __FUNCTION__;
 		Logger();
 	}
@@ -473,13 +463,12 @@ function UserManagerInit()
 		$GLOBALS['gAccessLevelEnabled'][ $row[ 'level' ] ] = $row[ 'enabled' ];
 		array_push( $GLOBALS['gAccessLevels'], $row[ 'name' ] );
 	}
-	if( $trace ) array_pop( $GLOBALS['gFunction'] );
+	if( $GLOBALS['gTrace'] ) array_pop( $GLOBALS['gFunction'] );
 }
 
 function UserManagerLoad( $userid )
 {
-	$trace = $GLOBALS['gTrace'];
-	if( $trace ) {
+	if( $GLOBALS['gTrace'] ) {
 		$GLOBALS['gFunction'][] = __FUNCTION__;
 		Logger();
 	}
@@ -487,7 +476,7 @@ function UserManagerLoad( $userid )
 	$query = sprintf( "show tables from %s like 'access'", $GLOBALS['mysql_dbname'] );
 	DoQuery( $query );
 	if( $GLOBALS['mysql_numrows'] == 0 ) {
-		if( $trace ) array_pop( $GLOBALS['gFunction'] );
+		if( $GLOBALS['gTrace'] ) array_pop( $GLOBALS['gFunction'] );
 		return;
 	}
 	
@@ -511,13 +500,12 @@ function UserManagerLoad( $userid )
 	$GLOBALS['gEnabled'] = $enabled;
 	$_SESSION['username'] = $row['username'];
 
-	if( $trace ) array_pop( $GLOBALS['gFunction'] );
+	if( $GLOBALS['gTrace'] ) array_pop( $GLOBALS['gFunction'] );
 }
 
 function UserManagerLogin()
 {
-	$trace = $GLOBALS['gTrace'];
-	if( $trace ) {
+	if( $GLOBALS['gTrace'] ) {
 		$GLOBALS['gFunction'][] = __FUNCTION__;
 		Logger();
 	}
@@ -567,12 +555,11 @@ function UserManagerLogin()
 	if( e ) e.focus();
 </script>
 <?php
-	if( $trace ) array_pop( $GLOBALS['gFunction' ] );
+	if( $GLOBALS['gTrace'] ) array_pop( $GLOBALS['gFunction' ] );
 }
 
 function UserManagerLogout() {
-	$trace = $GLOBALS['gTrace'];
-	if( $trace ) {
+	if( $GLOBALS['gTrace'] ) {
 		$GLOBALS['gFunction'][] = __FUNCTION__;
 		Logger();
 	}
@@ -581,12 +568,11 @@ function UserManagerLogout() {
 ?>
 <input type=submit name=action value=Continue>
 <?php
-	if( $trace ) array_pop( $GLOBALS['gFunction'] );
+	if( $GLOBALS['gTrace'] ) array_pop( $GLOBALS['gFunction'] );
 }
 
 function UserManagerPassword() {
-	$trace = $GLOBALS['gTrace'];
-	if( $trace ) {
+	if( $GLOBALS['gTrace'] ) {
 		$GLOBALS['gFunction'][] = __FUNCTION__;
 		Logger();
 	}
@@ -637,14 +623,13 @@ The UPDATE button will be activated once your password, entered twice, has been 
 ?>
 <input type=button id=userSettingsUpdate name=userSettingsUpdate disabled <?php echo $click ?> value=Update></th>
 <?php
-	if( $trace ) array_pop( $GLOBALS['gFunction'] );
+	if( $GLOBALS['gTrace'] ) array_pop( $GLOBALS['gFunction'] );
 	exit;
 }
 
 function UserManagerPrivileges()
 {
-	$trace = $GLOBALS['gTrace'];
-	if( $trace ) {
+	if( $GLOBALS['gTrace'] ) {
 		$GLOBALS['gFunction'][] = __FUNCTION__;
 		Logger();
 	}
@@ -712,13 +697,12 @@ function UserManagerPrivileges()
 	echo "</tr>";
 	echo "</table>";
 	echo "</div>";
-	if( $trace ) array_pop( $GLOBALS['gFunction'] );
+	if( $GLOBALS['gTrace'] ) array_pop( $GLOBALS['gFunction'] );
 }
 
 function UserManagerReport()
 {
-	$trace = $GLOBALS['gTrace'];
-	if( $trace ) {
+	if( $GLOBALS['gTrace'] ) {
 		$GLOBALS['gFunction'][] = __FUNCTION__;
 		Logger();
 	}
@@ -800,13 +784,12 @@ function UserManagerReport()
 	echo "</table>";
 	echo "</div>";
 	
-	if( $trace ) array_pop( $GLOBALS['gFunction'] );
+	if( $GLOBALS['gTrace'] ) array_pop( $GLOBALS['gFunction'] );
 }
 
 function UserManagerResend()
 {
-	$trace = $GLOBALS['gTrace'];
-	if( $trace ) {
+	if( $GLOBALS['gTrace'] ) {
 		$GLOBALS['gFunction'][] = __FUNCTION__;
 		Logger();
 	}
@@ -876,13 +859,12 @@ function UserManagerResend()
 	echo "<input type=hidden name=from value=UserManagerResend>";
 	echo "<input type=submit name=action value=Continue>";
 
-	if( $trace ) array_pop( $GLOBALS['gFunction'] );
+	if( $GLOBALS['gTrace'] ) array_pop( $GLOBALS['gFunction'] );
 }
 
 function UserManagerReset()
 {
-	$trace = $GLOBALS['gTrace'];
-	if( $trace ) {
+	if( $GLOBALS['gTrace'] ) {
 		$GLOBALS['gFunction'][] = __FUNCTION__;
 		Logger();
 	}
@@ -924,13 +906,12 @@ function UserManagerReset()
 	if( e ) e.focus();
 </script>
 <?php
-	if( $trace ) array_pop( $GLOBALS['gFunction'] );
+	if( $GLOBALS['gTrace'] ) array_pop( $GLOBALS['gFunction'] );
 }
 
 function UserManagerSettings()
 {
-	$trace = $GLOBALS['gTrace'];
-	if( $trace ) {
+	if( $GLOBALS['gTrace'] ) {
 		$GLOBALS['gFunction'][] = __FUNCTION__;
 		Logger();
 	}
@@ -1070,13 +1051,12 @@ function UserManagerSettings()
 	
 	echo "</table>";
 	echo "</div>";
-	if( $trace ) array_pop( $GLOBALS['gFunction'] );
+	if( $GLOBALS['gTrace'] ) array_pop( $GLOBALS['gFunction'] );
 }
 
 function UserManagerUpdate()
 {
-	$trace = $GLOBALS['gTrace'];
-	if( $trace ) {
+	if( $GLOBALS['gTrace'] ) {
 		$GLOBALS['gFunction'][] = __FUNCTION__;
 		Logger();
 	}
@@ -1327,12 +1307,11 @@ function UserManagerUpdate()
 		}
 	}
 	
-	if( $trace ) array_pop( $GLOBALS[ 'gFunction' ] );
+	if( $GLOBALS['gTrace'] ) array_pop( $GLOBALS[ 'gFunction' ] );
 }
 
 function UserManagerVerify() {
-	$trace = $GLOBALS['gTrace'];
-	if( $trace ) {
+	if( $GLOBALS['gTrace'] ) {
 		$GLOBALS['gFunction'][] = __FUNCTION__;
 		Logger();
 	}
@@ -1345,14 +1324,14 @@ function UserManagerVerify() {
 		if( empty( $_POST[ 'username' ] ) && $_POST['bypass'] != 1 )
 		{
 			$GLOBALS['gMessage1'] = "&nbsp;** Please enter your username";
-			if( $trace ) array_pop( $GLOBALS['gFunction'] );
+			if( $GLOBALS['gTrace'] ) array_pop( $GLOBALS['gFunction'] );
 			return;
 		}
 		
 		if( !isset( $_POST[ 'userpass' ] ) || $_POST['userpass'] == "empty" )
 		{
 			$GLOBALS['gMessage2'] = "&nbsp;** Please enter your password";
-			if( $trace ) array_pop( $GLOBALS['gFunction'] );
+			if( $GLOBALS['gTrace'] ) array_pop( $GLOBALS['gFunction'] );
 			return;
 		}
 		
@@ -1430,7 +1409,7 @@ function UserManagerVerify() {
 	} else {
 		$GLOBALS[ 'gAction' ]  = empty( $gActive ) ? "Inactive" : "Welcome";
 	}
-	if( $trace ) array_pop( $GLOBALS['gFunction'] );
+	if( $GLOBALS['gTrace'] ) array_pop( $GLOBALS['gFunction'] );
 }
 
 ?>

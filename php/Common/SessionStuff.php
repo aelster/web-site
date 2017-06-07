@@ -2,27 +2,25 @@
 
 function SessionStuff( $cmd )
 {
-	$trace = $GLOBALS['gTrace'];
-	if( $trace ) {
+	if( $GLOBALS['gTrace'] ) {
 		$GLOBALS['gFunction'][] = __FUNCTION__;
 		Logger();
 	}
-	$debug = $GLOBALS['gDebug'];
 	
 	switch( $cmd )
 	{
 		case( 'start' ):
 			session_start();
 			if( empty( $_SESSION['userid'] ) ) {
-				if( $trace ) Logger( "Starting new session" );
+				if( $GLOBALS['gTrace'] ) Logger( "Starting new session" );
 			} else {
-				if( $trace ) Logger( "Using existing session" );
+				if( $GLOBALS['gTrace'] ) Logger( "Using existing session" );
 				UserManager( 'load', $_SESSION['userid'] );
 			}
 			break;
 			
 		case( 'display' ):
-			if( $debug == 0 ) return;
+			if( $GLOBALS['gDebug'] == 0 ) return;
 			foreach( $_COOKIE as $key => $val )
 			{
 				echo sprintf( "COOKIE[%s]=%s<br>", $key, $val );
@@ -66,6 +64,6 @@ function SessionStuff( $cmd )
 			$GLOBALS['gUserVerified'] = 0;
 			break;
 	}
-	if( $trace ) array_pop( $GLOBALS['gFunction']);
+	if( $GLOBALS['gTrace'] ) array_pop( $GLOBALS['gFunction']);
 }
 ?>

@@ -1,16 +1,13 @@
 <?php
 function AddOverlib()
 {
-	global $gFunction;
-	global $gTrace;
-
-	if( $trace ) {
-		$gFunction[] = __FUNCTION__;
+	if( $GLOBALS['gTrace'] ) {
+		$GLOBALS['gFunction'][] = __FUNCTION__;
 		Logger();
 	}
 ?>
 <div id="overDiv" style="position:absolute; visibility:hidden; z-index:1000;"></div>
 <?php
-	if( $gTrace ) array_pop( $gFunction );
+	if( $GLOBALS['gTrace'] ) array_pop( $GLOBALS['gFunction'] );
 }
 ?>

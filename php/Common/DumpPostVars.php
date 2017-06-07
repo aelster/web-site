@@ -1,7 +1,6 @@
 <?php
 function DumpPostVars() {
-	$trace = $GLOBALS['gTrace'];
-	if( $trace ) {
+	if( $GLOBALS['gTrace'] ) {
 		$GLOBALS['gFunction'][] = __FUNCTION__;
 		Logger();
 	}
@@ -57,6 +56,6 @@ function DumpPostVars() {
 		}
 	}
 	echo "</div>";
-	if( $trace ) array_pop( $GLOBALS['gFunction'] );
+	if( $GLOBALS['gTrace'] ) array_pop( $GLOBALS['gFunction'] );
 }
 ?>
