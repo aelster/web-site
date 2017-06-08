@@ -1,48 +1,42 @@
 <?php
 
-global $mysql_host;
-global $mysql_user;
-global $mysql_pass;
-global $mysql_dbname;
-global $myqsl_db;
-
 function OpenDb(
-	$host="<mysql hostname>",
-	$dbname="<mysql db name>",
-	$user="<mysql username>",
-	$pass="<mysql password>"
-	) {
-	$trace = $GLOBALS['gTrace'];
-	if( $trace ) {
+				$dsn = 'PDO data source',
+				$user = 'PDO user',
+				$pass = 'PDO password' ) {
+	
+	global $gPDO_dsn, $gPDO_user, $gPDO_pass, $gPDO_attr;
+	
+	if( $GLOBALS['gTrace'] ) {
 		$GLOBALS['gFunction'][] = __FUNCTION__;
 		Logger();
 	}
 	
-	$num_args = func_num_args();
-	if( $num_args > 0 ) {
-		for( $i = 0; $i < $num_args; $i++ ) {
-			if( $i == 0 ) $GLOBALS['mysql_host'] = func_get_arg( $i );
-			if( $i == 1 ) $GLOBALS['mysql_dbname'] = func_get_arg( $i );
-			if( $i == 2 ) $GLOBALS['mysql_user'] = func_get_arg( $i );
-			if( $i == 3 ) $GLOBALS['mysql_pass'] = func_get_arg( $i );
-		}
+	if( strcmp( $dsn, 'PDO data source') == 0 ) { // No DSN specified, default assigned
+		$dsn = ! empty( $GLOBALS['gPDO_dsn'] ) ? $gPDO_dsn : $dsn; // Use the global value if present
 	}
 
-	$str = 'mysql:host=' . $GLOBALS['mysql_host'] . ';dbname=' . $GLOBALS['mysql_dbname'];
-	$user = $GLOBALS['mysql_user'];
-	$pass = $GLOBALS['mysql_pass'];
+	if( strcmp( $user, 'PDO user') == 0 ) { // No USER specified, default assigned
+		$user = ! empty( $GLOBALS['gPDO_user'] ) ? $gPDO_user : $user; // Use the global value if present
+	}
 
-try {
-    $dbh = new PDO($str, $user, $pass );
-    echo "Success";
+	if( strcmp( $pass, 'PDO password') == 0 ) { // No PASSWORD specified, default assigned
+		$pass = ! empty( $GLOBALS['gPDO_pass'] ) ? $gPDO_pass : $pass; // Use the global value if present
+	}
 
-} catch (PDOException $e) {
-	print "Error!: " . $e->getMessage() . '<br/>';
-	die();
-}
-	if( $trace ) array_pop( $GLOBALS['gFunction'] );
 	
-	return $GLOBALS['mysql_db'];
-}
+	try {
+		$attr = ! empty( $GLOBALS['gPDO_attr'] ) ? $gPDO_attr : array();
+	    $dbh = new PDO( $dsn, $user, $pass, $attr );
+		$dbh->setAttribute(PDO::ATTR_EMULATE_PREPARES, false);
 
+	} catch (PDOException $e) {
+		print "Error!: " . $e->getMessage() . '<br/>';
+		die();
+	}
+	
+	if( $GLOBALS['gTrace'] ) array_pop( $GLOBALS['gFunction'] );
+	
+	return $dbh;
+}
 ?>
