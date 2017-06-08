@@ -2,6 +2,7 @@
 
 $gDebug = 0;
 $gFunction = array();
+$gPDO_attr = array();
 $gPDO_dbh = null;
 $gPDO_dsn = "";
 $gPDO_user = "";
