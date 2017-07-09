@@ -27,6 +27,7 @@ function DirTree($dir, $index_required) {
 			if( preg_match( '/images/', $file ) ) continue;
 			if( preg_match( '/^wp-/i', $file ) ) continue;
 			if( preg_match( '/^fpdf/', $file ) ) continue;
+                        if( preg_match( '/^nbproject/', $file ) ) continue;
 			$t = $thisdir . DIRECTORY_SEPARATOR . $file;
 			if( preg_match( '/site$/', $file ) ) $dirs[] = $t;
 			if( is_dir( $t ) ) {
