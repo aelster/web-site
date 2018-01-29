@@ -2,3 +2,4 @@
 local_*.php
 .DS_store
 *.bz
+nbproject

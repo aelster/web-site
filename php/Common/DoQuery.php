@@ -3,7 +3,7 @@
 function DoQuery($query) {
     $debug = $GLOBALS['gDebug'];
 
-    if ($debug)
+    if (!empty($debug))
         $dmsg = "&nbsp;&nbsp;&nbsp;&nbsp;DoQuery: $query";
 
     $stmt = $GLOBALS['gDb']->prepare($query);
@@ -19,31 +19,17 @@ function DoQuery($query) {
         echo '<pre>' . $e->getTraceAsString() . '</pre>';
     }
     $GLOBALS['gPDO_num_rows'] = $stmt->rowCount();
-    /*
-      if (mysql_errno($db) != 0) {
-      if (!$db) {
-      echo "  query: $query<br>\n";
-      }
-      echo "  result: " . mysql_error($db) . "<br>\n";
-      echo "I'm sorry but something unexpected occurred.  Please send all details<br>";
-      echo "of what you were doing and any error messages to $support<br>";
-      } else {
-      if (preg_match("/^select/i", $query)) {
-      $numrows = mysql_num_rows($result);
-      } elseif (preg_match("/^insert/i", $query)) {
-      $numrows = mysql_affected_rows($db);
-      $last_id = mysql_insert_id();
-      } else {
-      $numrows = mysql_affected_rows($db);
-      }
-     * 
-     */
-    if ($debug)
+
+    if (!empty($debug)) {
         $dmsg .= sprintf(", # rows: %d", $GLOBALS['gPDO_num_rows']);
 
-
-    if ($debug)
         Logger($dmsg);
-    
+        if( !empty($args) ) {
+            $i = 0;
+            foreach ($args as $key => $val) {
+                printf("&nbsp;&nbsp;&nbsp;&nbsp;arg %d: %s => %s<br>", $i++, $key, $val);
+            }
+        }
+    }
     return $stmt;
 }
