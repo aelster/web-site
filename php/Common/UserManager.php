@@ -23,15 +23,13 @@ function UserManager() {
     }
 
     $area = func_get_arg(0);
-
-    static $inited = 0;
-
-    if (!$inited) {
-        UserManagerInit();
-        $inited = 1;
-    }
+    echo "area = [$area]<br>";
 
     switch ($area) {
+        case 'activate':
+            UserManagerActivate();
+            break;
+        
         case( 'authorized' ):
             $auth = UserManagerAuthorized(func_get_arg(1));
             break;
@@ -103,7 +101,7 @@ function UserManager() {
         return $auth;
 }
 
-function UserManagerActivate($new_val) {
+function UserManagerActivate() {
     if ($GLOBALS['gTrace']) {
         $GLOBALS['gFunction'][] = __FUNCTION__;
         Logger();
@@ -117,15 +115,17 @@ $active = trim($_GET['y']);
 if(is_numeric($userid) && !empty($active)){
 
 	//update users record set the active column to Yes where the memberID and active value match the ones provided in the array
-	$query = "UPDATE members SET active = 'Yes' WHERE memberID = :memberID AND active = :active";
-        $stmt = DoQuery( $query, [':memberID' => $memberID,':active' => $active ] );
+	$query = "UPDATE users SET active = 'Yes' WHERE userid = :userid AND active = :active";
+        $stmt = DoQuery( $query, [':userid' => $userid,':active' => $active ] );
 
         //if the row was updated redirect the user
 	if($stmt->rowCount() == 1){
 
 		//redirect to login page
-		header('Location: login.php?action=active');
-		exit;
+            UserManagerLoad($userid);
+            $GLOBALS['gAction'] = 'Start';
+            $GLOBALS['gArea'] = 'active';
+            return;
 
 	} else {
 		echo "Your account could not be activated."; 
@@ -175,10 +175,17 @@ function UserManagerAuthorized($privilege) {
         $GLOBALS['gFunction'][] = __FUNCTION__;
         Logger();
     }
+    printf( "privilege: [%s]<br>", $privilege );
+    printf( "gAccessLevel: [%d]<br>", $GLOBALS['gAccessLevel']);
+    printf( "gAccessNameToLevel[%s]: %d<br>", $privilege, $GLOBALS['gAccessNameToLevel'][$privilege] );
     $level = $GLOBALS['gAccessLevel'];
     $ok = ( $level >= $GLOBALS['gAccessNameToLevel'][$privilege] ) ? 1 : 0;
     $ok = $ok && $GLOBALS['gAccessLevelEnabled'][$level];
-
+    echo "checking privilege: $privilege<br>";
+    echo "gAccessLevel: $level<br>";
+    echo "gAccessNameToLevel[$privilege]: " . $GLOBALS['gAccessNameToLevel'][$privilege] . "<br>";
+    echo "gAccessLevelEnabled[$level]: " . $GLOBALS['gAccessLevelEnabled'][$level] . "<br>";
+    echo "ok: $ok<br>";
     if ($GLOBALS['gTrace']) {
         array_pop($GLOBALS['gFunction']);
     }
@@ -300,7 +307,7 @@ function UserManagerDisplay() {
             echo "<th>E-Mail</th>";
             echo "<th>Access</th>";
             echo "<th>Last Login</th>";
-            echo "<th>Active</th>";
+            echo "<th>Disabled</th>";
             echo "<th>Actions</th>";
             echo "</tr>\n";
         }
@@ -335,8 +342,8 @@ function UserManagerDisplay() {
             }
             echo "  <td align=center>$str</td>\n";
 
-            $checked = $usr['active'] ? "checked" : "";
-            printf("  <td class=c><input type=checkbox name=u_%d_active value=1 $checked $jscript ></td>\n", $id);
+            $checked = $usr['disabled'] ? "checked" : "";
+            printf("  <td class=c><input type=checkbox name=u_%d_disabled value=1 $checked $jscript ></td>\n", $id);
 
             echo "  <td>";
             $acts = array();
@@ -558,141 +565,127 @@ function UserManagerEdit() {
                 array_pop($GLOBALS['gFunction']);
         }
 
-        function UserManagerInit() {
-            if ($GLOBALS['gTrace']) {
-                $GLOBALS['gFunction'][] = __FUNCTION__;
-                Logger();
-            }
+function UserManagerLoad($userid) {
+    if ($GLOBALS['gTrace']) {
+        $GLOBALS['gFunction'][] = __FUNCTION__;
+        Logger();
+    }
 
-            $GLOBALS['gAccessNameToLevel'] = array();
-            $GLOBALS['gAccessNameEnabled'] = array();
-            $GLOBALS['gAccessLevels'] = array();
+    $stmt = DoQuery('SELECT * from users where userid = :uid', array(':uid' => $userid));
+    $row = $stmt->fetch(PDO::FETCH_ASSOC);
+    $GLOBALS['gUserId'] = $userid;
+    $GLOBALS['gNameFirst'] = $row['first'];
+    $GLOBALS['gNameLast'] = $row['last'];
+    $GLOBALS['gPasswdChanged'] = $row['pwdchanged'];
+    $GLOBALS['gUserVerified'] = 1;
+    $GLOBALS['gUserName'] = $row['username'];
+    $GLOBALS['gLastLogin'] = $row['lastlogin'];
+    $GLOBALS['gActive'] = $row['active'];
 
-            $stmt = DoQuery('select * from privileges order by level desc');
-            while ($row = $stmt->fetch(PDO::FETCH_ASSOC)) {
-                $GLOBALS['gAccessNameToId'][$row['name']] = $row['id'];
-                $GLOBALS['gAccessNameToLevel'][$row['name']] = $row['level'];
-                $GLOBALS['gAccessNameEnabled'][$row['name']] = $row['enabled'];
-                $GLOBALS['gAccessLevelEnabled'][$row['level']] = $row['enabled'];
-                array_push($GLOBALS['gAccessLevels'], $row['name']);
-            }
-            if ($GLOBALS['gTrace'])
-                array_pop($GLOBALS['gFunction']);
+    $query = 'select privileges.level, privileges.enabled from privileges, access';
+    $query .= ' where access.privid = privileges.id and access.userid = :uid';
+    $stmt2 = DoQuery($query, array(':uid' => $userid));
+    list( $level, $enabled ) = $stmt2->fetch(PDO::FETCH_NUM);
+    $GLOBALS['gAccessLevel'] = $level;
+    $GLOBALS['gEnabled'] = $enabled;
+    $_SESSION['username'] = $row['username'];
+    printf( "Loaded user #%d, AccessLevel: %d, Enabled: %d<br>", $userid, $level, $enabled );
+
+    if ($GLOBALS['gTrace'])
+        array_pop($GLOBALS['gFunction']);
+}
+
+function UserManagerLogin() {
+    if ($GLOBALS['gTrace']) {
+        $GLOBALS['gFunction'][] = __FUNCTION__;
+        Logger();
+    }
+    $stmt = DoQuery('select * from users');
+    if ($stmt->rowCount() == 0) {
+        UserManagerNew();
+        return;
+    }
+    ?>
+                <div class="container">
+
+                    <div class="row">
+
+                        <div class="col-xs-12 col-sm-8 col-md-6 col-sm-offset-2 col-md-offset-3">
+                            <h2>Please Login</h2>
+                            <p><input type=button value="Forgot your password?"
+    <?php
+    $jsx = array();
+    $jsx[] = "setValue('area','display')";
+    $jsx[] = "addAction('forgot')";
+    $js = sprintf("onClick=\"%s\"", join(';', $jsx));
+    echo $js . ">";
+    ?>
+                            </p>
+                            <hr>
+
+    <?php
+    echo "gArea: " . $GLOBALS['gArea'] . "<br>";
+    
+    //check for any errors
+    if (isset($GLOBALS['gError'])) {
+        foreach ($GLOBALS['gError'] as $error) {
+            echo '<p class="bg-danger">' . $error . '</p>';
         }
+    }
 
-        function UserManagerLoad($userid) {
-            if ($GLOBALS['gTrace']) {
-                $GLOBALS['gFunction'][] = __FUNCTION__;
-                Logger();
-            }
+    if (isset($GLOBALS['gArea'])) {
 
-            $stmt = DoQuery('SELECT * from users where userid = :uid', array(':uid' => $userid));
-            $row = $stmt->fetch(PDO::FETCH_ASSOC);
-            $GLOBALS['gUserId'] = $userid;
-            $GLOBALS['gNameFirst'] = $row['first'];
-            $GLOBALS['gNameLast'] = $row['last'];
-            $GLOBALS['gPasswdChanged'] = $row['pwdchanged'];
-            $GLOBALS['gUserVerified'] = 1;
-            $GLOBALS['gUserName'] = $row['username'];
-            $GLOBALS['gLastLogin'] = $row['lastlogin'];
-            $GLOBALS['gActive'] = $row['active'];
-
-            $query = 'select privileges.level, privileges.enabled from privileges, access';
-            $query .= ' where access.privid = privileges.id and access.userid = :uid';
-            $stmt2 = DoQuery($query, array(':uid' => $userid));
-            list( $level, $enabled ) = $stmt2->fetch(PDO::FETCH_NUM);
-            $GLOBALS['gAccessLevel'] = $level;
-            $GLOBALS['gEnabled'] = $enabled;
-            $_SESSION['username'] = $row['username'];
-
-            if ($GLOBALS['gTrace'])
-                array_pop($GLOBALS['gFunction']);
+        //check the action
+        switch ($GLOBALS['gArea']) {
+            case 'active':
+                echo "<h2 class='bg-success'>Your account is now active you may now log in.</h2>";
+                break;
+            case 'reset':
+                echo "<h2 class='bg-success'>Please check your inbox for a reset link.</h2>";
+                break;
+            case 'resetAccount':
+                echo "<h2 class='bg-success'>Password changed, you may now login.</h2>";
+                break;
         }
+    }
+    ?>
 
-        function UserManagerLogin() {
-            if ($GLOBALS['gTrace']) {
-                $GLOBALS['gFunction'][] = __FUNCTION__;
-                Logger();
-            }
-            ?>
-            <div class="container">
+                            <div class="form-group">
+                                <input type="text" name="username" id="username" class="form-control input-lg" placeholder="User Name" value="<?php
+    if (isset($gError)) {
+        echo htmlspecialchars($_POST['username'], ENT_QUOTES);
+    }
+    ?>" tabindex="1">
+                            </div>
 
-                <div class="row">
-
-                    <div class="col-xs-12 col-sm-8 col-md-6 col-sm-offset-2 col-md-offset-3">
-                        <h2>Please Login</h2>
-                        <p><input type=button value="Forgot your password?"
-                            <?php
-                            $jsx = array();
-                            $jsx[] = "setValue('area','display')";
-                            $jsx[] = "addAction('forgot')";
-                            $js = sprintf("onClick=\"%s\"", join(';', $jsx));
-                            echo $js . ">";
-                            ?>
-                        </p>
-                        <hr>
-
-                        <?php
-                        //check for any errors
-                        if (isset($GLOBALS['gError'])) {
-                            foreach ($GLOBALS['gError'] as $error) {
-                                echo '<p class="bg-danger">' . $error . '</p>';
-                            }
-                        }
-
-                        if (isset($_POST['area'])) {
-
-                            //check the action
-                            switch ($_POST['area']) {
-                                case 'active':
-                                    echo "<h2 class='bg-success'>Your account is now active you may now log in.</h2>";
-                                    break;
-                                case 'reset':
-                                    echo "<h2 class='bg-success'>Please check your inbox for a reset link.</h2>";
-                                    break;
-                                case 'resetAccount':
-                                    echo "<h2 class='bg-success'>Password changed, you may now login.</h2>";
-                                    break;
-                            }
-                        }
-                        ?>
-
-                        <div class="form-group">
-                            <input type="text" name="username" id="username" class="form-control input-lg" placeholder="User Name" value="<?php
-                            if (isset($gError)) {
-                                echo htmlspecialchars($_POST['username'], ENT_QUOTES);
-                            }
-                            ?>" tabindex="1">
-                        </div>
-
-                        <div class="form-group">
-                            <input type="password" name="password" id="password" class="form-control input-lg" placeholder="Password" tabindex="3">
-                        </div>
+                            <div class="form-group">
+                                <input type="password" name="password" id="password" class="form-control input-lg" placeholder="Password" tabindex="3">
+                            </div>
 
 
-                        <hr>
-                        <div class="row">
-                            <div class="col-xs-6 col-md-6">
-                                <input type=button value="Login"
-                                <?php
-                                $jsx = array();
-                                $jsx[] = "addAction('Login')";
-                                $js = sprintf("onClick=\"%s\"", join(';', $jsx));
-                                echo $js
-                                ?>
-                                       class="btn btn-primary btn-block btn-lg" tabindex="5">
+                            <hr>
+                            <div class="row">
+                                <div class="col-xs-6 col-md-6">
+                                    <input type=button value="Login"
+    <?php
+    $jsx = array();
+    $jsx[] = "addAction('Login')";
+    $js = sprintf("onClick=\"%s\"", join(';', $jsx));
+    echo $js
+    ?>
+                                           class="btn btn-primary btn-block btn-lg" tabindex="5">
+                                </div>
                             </div>
                         </div>
                     </div>
+
+
+
                 </div>
-
-
-
-            </div>
-            <?php
-            if ($GLOBALS['gTrace'])
-                array_pop($GLOBALS['gFunction']);
-        }
+    <?php
+    if ($GLOBALS['gTrace'])
+        array_pop($GLOBALS['gFunction']);
+}
 
 function UserManagerNew() {
     if ($GLOBALS['gTrace']) {
@@ -771,7 +764,7 @@ function UserManagerNew() {
                 ]);
 
                 $id = $GLOBALS['gDb']->lastInsertId('userid');
-                $stmt = DoQuery( 'select min(level) from privileges' );
+                $stmt = DoQuery( 'select max(level) from privileges' );
                 list( $level ) = $stmt->fetch(PDO::FETCH_NUM);
                 $stmt = DoQuery('select id from privileges where level = :level', [':level' => $level ] );
                 list( $pid ) = $stmt->fetch(PDO::FETCH_NUM);
@@ -782,7 +775,7 @@ function UserManagerNew() {
                 $subject = "Registration Confirmation for " . $GLOBALS['gTitle'];
                 $body = "<p>Thank you for registering at " . $GLOBALS['gTitle'] . ".</p>";
                 $body .= "<p>To activate your account, please click on this link: ";
-                $body .= "<a href='" . DIR . $GLOBALS['gSourceCode'] . "?action=Activate&x=$id&y=$activasion'>";
+                $body .= "<a href='" . DIR . $GLOBALS['gSourceCode'] . "?action=activate&x=$id&y=$activasion'>";
                 $body .= "activate</a></p>";
                 $body .= "<p>Regards Site Admin</p>";
 
@@ -1211,7 +1204,7 @@ function UserManagerNew() {
                 $resetToken = hash('SHA256', $GLOBALS['gResetKey']);
 
                 echo "gResetKey: [" . $GLOBALS['gResetKey'] . "]<br>";
-                echo "gResetToken: [" . $GLOBALS['gResetToken'] . "]<br>";
+                echo " ResetToken: [$resetToken]<br>";
 
                 $query = 'SELECT resetToken, resetComplete FROM users WHERE resetToken = :token';
                 $stmt = DoQuery($query, [':token' => $resetToken]);
@@ -1536,7 +1529,7 @@ function UserManagerNew() {
                     $acts[] = sprintf("first = '%s'", addslashes($_POST['first']));
                     $acts[] = sprintf("email = '%s'", addslashes($_POST['email']));
                     $acts[] = sprintf("password = '%s'", md5(sprintf("%d", time())));
-                    $acts[] = sprintf("active = '1'");
+                    $acts[] = sprintf("disabled = '0'");
                     $query = "insert into users set " . join(',', $acts);
                     DoQuery($query);
                     $uid = mysql_insert_id();
@@ -1696,10 +1689,10 @@ function UserManagerNew() {
                             if (strcmp($_POST[$tag], $user['email']))
                                 $acts[] = "email = '" . addslashes($_POST[$tag]) . "'";
 
-                            $tag = "u_${uid}_active";
+                            $tag = "u_${uid}_disabled";
                             $val = isset($_POST[$tag]) ? 1 : 0;
-                            if ($val != $user['active'])
-                                $acts[] = "active = '${val}'";
+                            if ($val != $user['disabled'])
+                                $acts[] = "disabled = '${val}'";
 
                             if (count($acts)) {
                                 $query = "update users set " . join(',', $acts) . " where userid = '$uid'";

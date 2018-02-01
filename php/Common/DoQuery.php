@@ -1,13 +1,13 @@
 <?php
-
 function DoQuery($query) {
     $debug = $GLOBALS['gDebug'];
 
     if (!empty($debug))
         $dmsg = "&nbsp;&nbsp;&nbsp;&nbsp;DoQuery: $query";
 
-    $stmt = $GLOBALS['gDb']->prepare($query);
+    
     try {
+        $stmt = $GLOBALS['gDb']->prepare($query);
         if (func_num_args() == 1) {
             $stmt->execute();
         } else {
@@ -15,8 +15,11 @@ function DoQuery($query) {
             $stmt->execute($args);
         }
     } catch (PDOException $e) {
+        echo "<pre>";
         echo $e->getMessage();
-        echo '<pre>' . $e->getTraceAsString() . '</pre>';
+        echo "<hr>";
+        echo $e->getTraceAsString();
+        echo "</pre>";
     }
     $GLOBALS['gPDO_num_rows'] = $stmt->rowCount();
 
