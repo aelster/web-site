@@ -23,7 +23,6 @@ function UserManager() {
     }
 
     $area = func_get_arg(0);
-    echo "area = [$area]<br>";
 
     switch ($area) {
         case 'activate':
@@ -172,21 +171,22 @@ function UserManagerAdd() {
 
 function UserManagerAuthorized($privilege) {
     if ($GLOBALS['gTrace']) {
-        $GLOBALS['gFunction'][] = __FUNCTION__;
+        $GLOBALS['gFunction'][] = sprintf( "%s (%s)", __FUNCTION__, $privilege );
         Logger();
     }
-    printf( "privilege: [%s]<br>", $privilege );
-    printf( "gAccessLevel: [%d]<br>", $GLOBALS['gAccessLevel']);
-    printf( "gAccessNameToLevel[%s]: %d<br>", $privilege, $GLOBALS['gAccessNameToLevel'][$privilege] );
     $level = $GLOBALS['gAccessLevel'];
+#    printf( "Level: %d<br>", $level );
+#    printf( "gAccessNameToLevel[%s]: %d<br>", $privilege, $GLOBALS['gAccessNameToLevel'][$privilege] );
     $ok = ( $level >= $GLOBALS['gAccessNameToLevel'][$privilege] ) ? 1 : 0;
+#    printf( "  ok: [$ok]<br>" );
+#    printf( "gAccessLevelEnabled[%s] = %d<br>", $level, $GLOBALS['gAccessLevelEnabled'][$level] );
     $ok = $ok && $GLOBALS['gAccessLevelEnabled'][$level];
-    echo "checking privilege: $privilege<br>";
-    echo "gAccessLevel: $level<br>";
-    echo "gAccessNameToLevel[$privilege]: " . $GLOBALS['gAccessNameToLevel'][$privilege] . "<br>";
-    echo "gAccessLevelEnabled[$level]: " . $GLOBALS['gAccessLevelEnabled'][$level] . "<br>";
-    echo "ok: $ok<br>";
     if ($GLOBALS['gTrace']) {
+        if( $ok ) {
+#            printf( "  %s is authorized<br>", $_SESSION['username'] );
+        } else {
+#            printf( "  %s is NOT authorized<br>", $_SESSION['username'] );
+        }
         array_pop($GLOBALS['gFunction']);
     }
     return $ok;
@@ -567,7 +567,7 @@ function UserManagerEdit() {
 
 function UserManagerLoad($userid) {
     if ($GLOBALS['gTrace']) {
-        $GLOBALS['gFunction'][] = __FUNCTION__;
+        $GLOBALS['gFunction'][] = sprintf( "%s (%d)", __FUNCTION__, $userid );
         Logger();
     }
 
@@ -589,8 +589,8 @@ function UserManagerLoad($userid) {
     $GLOBALS['gAccessLevel'] = $level;
     $GLOBALS['gEnabled'] = $enabled;
     $_SESSION['username'] = $row['username'];
-    printf( "Loaded user #%d, AccessLevel: %d, Enabled: %d<br>", $userid, $level, $enabled );
-
+    $_SESSION['level'] = $level;
+    
     if ($GLOBALS['gTrace'])
         array_pop($GLOBALS['gFunction']);
 }
@@ -624,7 +624,6 @@ function UserManagerLogin() {
                             <hr>
 
     <?php
-    echo "gArea: " . $GLOBALS['gArea'] . "<br>";
     
     //check for any errors
     if (isset($GLOBALS['gError'])) {
@@ -750,6 +749,8 @@ function UserManagerNew() {
             $activasion = md5(uniqid(rand(), true));
 
             try {
+                $stmt = DoQuery( 'select * from users' );
+                $num_users = $stmt->rowCount();
 
                 //insert into database with a prepared statement
                 $query = "insert into users (username,first,last,password,email,active)";
@@ -764,7 +765,11 @@ function UserManagerNew() {
                 ]);
 
                 $id = $GLOBALS['gDb']->lastInsertId('userid');
-                $stmt = DoQuery( 'select max(level) from privileges' );
+                if( $num_users == 0 ) {
+                    $stmt = DoQuery( 'select max(level) from privileges' ); # first user is privileged
+                } else {
+                    $stmt = DoQuery( 'select min(level) from privileges' ); # all others minimal at first
+                }
                 list( $level ) = $stmt->fetch(PDO::FETCH_NUM);
                 $stmt = DoQuery('select id from privileges where level = :level', [':level' => $level ] );
                 list( $pid ) = $stmt->fetch(PDO::FETCH_NUM);
@@ -808,7 +813,7 @@ function UserManagerNew() {
 	    <div class="col-xs-12 col-sm-8 col-md-6 col-sm-offset-2 col-md-offset-3">
 			<form role="form" method="post" action="" autocomplete="off">
 				<h2>Please Sign Up</h2>
-				<p>Already a member? <a href='login.php'>Login</a></p>
+				<p>Already a member? <a href='admin.php'>Login</a></p>
 				<hr>
 
 				<?php
@@ -1756,25 +1761,27 @@ function UserManagerNew() {
                 }
                 $gError = array();
                 $user = $GLOBALS['user'];
+                $username = isset($_POST['username']) ? $_POST['username'] : NULL;
+                $password = isset($_POST['password']) ? $_POST['password'] : NULL;
 
-                if (!isset($_POST['username']))
+                if (!isset($username))
                     $gError[] = "Please fill out all fields";
-                if (!isset($_POST['password']))
+                if (!isset($password))
                     $gError[] = "Please fill out all fields";
 
-                $username = $_POST['username'];
                 $GLOBALS['gAction'] = 'Start';
                 if ($user->isValidUsername($username)) {
-                    if (!isset($_POST['password'])) {
+                    if (!isset($password)) {
                         $gError[] = 'A password must be entered';
                     }
-                    $password = $_POST['password'];
 
                     if ($user->login($username, $password)) {
                         $_SESSION['username'] = $username;
                         $GLOBALS['gAction'] = 'Main';
                         $GLOBALS['gUserName'] = $username;
                         UserManager('load', $_SESSION['userid']);
+                    } elseif( $_SESSION['disabled'] ) {
+                        $gError[] = "Your account is currently disabled, please contact " . SITEEMAIL;
                     } else {
                         $gError[] = 'Wrong username or password or your account has not been activated.';
                     }
