@@ -1117,82 +1117,6 @@ function UserManagerNew() {
                     array_pop($GLOBALS['gFunction']);
             }
 
-            function UserManagerResend() {
-                if ($GLOBALS['gTrace']) {
-                    $GLOBALS['gFunction'][] = __FUNCTION__;
-                    Logger();
-                }
-
-                if (func_num_args() > 0) {
-                    $email = func_get_arg(0);
-                } else {
-                    $email = $_POST["email"];
-                }
-
-                $GLOBALS['mysql_numrows'] = 0;
-
-                if (!empty($email))
-                    DoQuery("select * from users where email = '$email'");
-
-                if ($GLOBALS['mysql_numrows'] > 0) {
-                    $user = mysql_fetch_assoc($GLOBALS['mysql_result']);
-                    $userid = $user['userid'];
-
-                    $str = mt_rand();
-                    $new_password = substr(SHA256::hash($str), 0, 6);
-                    $opts = array();
-                    $opts[] = "password = '$new_password'";
-                    $opts[] = "pwdchanged = '0000-00-00 00:00:00'";
-                    $opts[] = "lastlogin = '0000-00-00 00:00:00'";
-                    $opts[] = sprintf("pwdexpires = '%s'", date('Y-m-d H:i:s', time() + 60 * 10));
-                    $query = "update users set " . join(',', $opts) . " WHERE userid = '$userid'";
-                    DoQuery($query);
-
-                    $uri = sprintf("http://%s%s", $_SERVER['HTTP_HOST'], $_SERVER['REQUEST_URI']);
-
-                    $body = array();
-                    $body[] = "Your password has been changed as follows:";
-                    $body[] = "";
-                    $body[] = "    Username: " . $user['username'];
-                    $body[] = "    Password: " . $new_password;
-                    $body[] = "";
-                    $body[] = "This combination will only be good for the next ten minutes.  If you don't get there in time,";
-                    $body[] = "the below link will still be good, click on Reset Password and enter your e-mail address.";
-                    $body[] = "";
-                    $body[] = "To access the site again, please paste the following into your browswer or click on the following link:";
-                    $body[] = "";
-                    $body[] = "  ${uri}";
-                    $body[] = "";
-
-                    $gma = $GLOBALS['mail_admin'];
-                    $from = is_array($gma) ? $gma : array($gma);
-
-                    if ($GLOBALS['mail_enabled']) {
-                        $name = $user['first'] . " " . $user['last'];
-                        $to = array($user['email'] => $name);
-                    } else {
-                        $gma = $GLOBALS['mail_admin'];
-                        $to = $from;
-                    }
-                    $subject = "Password Reset";
-                    $message = Swift_Message::newInstance($subject);
-                    $message->setTo($to);
-                    $message->setFrom($from);
-                    $message->setBody(join("\n", $body), 'text/plain');
-                    MyMail($message);
-
-                    echo "A reset link has been sent to $email";
-                } else {
-                    echo "No user with that e-mail";
-                }
-                echo "<br><br>";
-                echo "<input type=hidden name=from value=UserManagerResend>";
-                echo "<input type=submit name=action value=Continue>";
-
-                if ($GLOBALS['gTrace'])
-                    array_pop($GLOBALS['gFunction']);
-            }
-
             function UserManagerReset() {
                 if ($GLOBALS['gTrace']) {
                     $GLOBALS['gFunction'][] = __FUNCTION__;
@@ -1780,7 +1704,7 @@ function UserManagerNew() {
                         $GLOBALS['gAction'] = 'Main';
                         $GLOBALS['gUserName'] = $username;
                         UserManager('load', $_SESSION['userid']);
-                    } elseif( $_SESSION['disabled'] ) {
+                    } elseif( isset($_SESSION['disabled'] ) && $_SESSION['disabled'] ) {
                         $gError[] = "Your account is currently disabled, please contact " . SITEEMAIL;
                     } else {
                         $gError[] = 'Wrong username or password or your account has not been activated.';
