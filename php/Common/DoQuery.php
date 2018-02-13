@@ -1,18 +1,36 @@
 <?php
 function DoQuery($query) {
     $debug = $GLOBALS['gDebug'];
+    $gDb = $GLOBALS['gDb'];
 
     if (!empty($debug))
+        echo "<!-- debug: [$debug] -->\n";
         $dmsg = "&nbsp;&nbsp;&nbsp;&nbsp;DoQuery: $query";
 
     
+    $num = 0;
+    $stmt = NULL;
+    
     try {
-        $stmt = $GLOBALS['gDb']->prepare($query);
-        if (func_num_args() == 1) {
-            $stmt->execute();
+        if( $query == 'start transaction' ) {
+            $gDb->beginTransaction();
+            
+        } elseif( $query == 'commit' ) {
+            $gDb->commit();
+            
+        } elseif( $query == 'rollback' ) {
+            $gDb->rollBack();
+            
         } else {
-            $args = func_get_arg(1);
-            $stmt->execute($args);
+            $stmt = $gDb->prepare($query);
+            if (func_num_args() == 1) {
+                $stmt->execute();
+            } else {
+                $args = func_get_arg(1);
+                $stmt->execute($args);
+            }
+            $GLOBALS['gPDO_num_rows'] = $num = $stmt->rowCount();
+            $GLOBALS['gPDO_lastInsertID'] = $gDb->lastInsertID();
         }
     } catch (PDOException $e) {
         echo "<pre>";
@@ -21,10 +39,9 @@ function DoQuery($query) {
         echo $e->getTraceAsString();
         echo "</pre>";
     }
-    $GLOBALS['gPDO_num_rows'] = $stmt->rowCount();
 
     if (!empty($debug)) {
-        $dmsg .= sprintf(", # rows: %d", $GLOBALS['gPDO_num_rows']);
+        $dmsg .= sprintf(", # rows: %d", $num );
 
         Logger($dmsg);
         if( !empty($args) ) {
