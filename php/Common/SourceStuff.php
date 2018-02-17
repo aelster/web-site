@@ -232,6 +232,8 @@ function SourceDisplay() {
                 continue;
             if (preg_match("/\.dbg$/", $file))
                 continue;
+            if (preg_match("/\.log$/", $file))
+                continue;
             if (preg_match("/\.ini$/", $file))
                 continue;
             if (preg_match("/\.*z$/", $file))

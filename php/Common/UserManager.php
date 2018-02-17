@@ -338,7 +338,11 @@ function UserManagerDisplay() {
             else {
                 $diff = time() - strtotime($usr['lastlogin']);
                 $days = $diff / 60 / 60 / 24;
-                $str = sprintf("%d days ago", $days);
+                if( $days >= 1 ) {
+                    $str = sprintf("%d days ago", $days);
+                } else {
+                    $str = $usr['lastlogin'];
+                }
             }
             echo "  <td align=center>$str</td>\n";
 
@@ -1122,18 +1126,16 @@ function UserManagerNew() {
                     $GLOBALS['gFunction'][] = __FUNCTION__;
                     Logger();
                 }
-
+                error_log('in reset');
 //if logged in redirect to members page
                 if ($GLOBALS['user']->is_logged_in()) {
                     return;
                 }
+                error_log('not logged in');
                 if (empty($GLOBALS['gResetKey'])) {
                     $GLOBALS['gResetKey'] = $_POST['key'];
                 }
                 $resetToken = hash('SHA256', $GLOBALS['gResetKey']);
-
-                echo "gResetKey: [" . $GLOBALS['gResetKey'] . "]<br>";
-                echo " ResetToken: [$resetToken]<br>";
 
                 $query = 'SELECT resetToken, resetComplete FROM users WHERE resetToken = :token';
                 $stmt = DoQuery($query, [':token' => $resetToken]);
@@ -1149,7 +1151,7 @@ function UserManagerNew() {
                     echo "stop: [$stop]<br>";
 
 //if form has been submitted process it
-#    if (isset($_POST['submit'])) {
+    if (array_key_exists('password', $_POST) ) {
 
                 if (!isset($_POST['password']) || !isset($_POST['passwordConfirm']))
                     $error[] = 'Both Password fields are required to be entered';
@@ -1167,7 +1169,6 @@ function UserManagerNew() {
                     $error[] = 'Passwords do not match.';
                 }
 
-                echo "isset(error): " . isset($error) . "<br>";
                 //if no errors have been created carry on
                 if (!isset($error)) {
 
@@ -1193,7 +1194,7 @@ function UserManagerNew() {
                         $error[] = $e->getMessage();
                     }
                 }
-#    }
+    }
                 ?>
 
                 <div class="container">
