@@ -35,6 +35,13 @@ function clearDebugWindow() {
     }
 }
 
+function closeDebugWindow() {
+    if( debug_disabled ) { return; }
+    if (window.top.debugWindow && ! window.top.debugWindow.closed) {
+	window.top.debugWindow.close();
+    }
+}
+
 function createDebugWindow() {
 	if( debug_disabled ) { return; }
 	if( window.top.debugWindow ) {
@@ -76,7 +83,7 @@ function DumpHtml()
 function debug(text) {
     var str;
     if (window.top.debugWindow && ! window.top.debugWindow.closed) {;
-	str = '--------\n';
+	str = '';
 	for( var i=0; i < arguments.length; i++ )
 	    {
 		str += arguments[i];

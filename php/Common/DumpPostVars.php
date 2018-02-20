@@ -5,10 +5,10 @@ function DumpPostVars() {
 		Logger();
 	}
 
-	echo "<div align=left target=dbg style=\"background-color: lightgrey;\">";
+	Logger( "<div align=left target=dbg style=\"background-color: lightgrey;\">");
 
 	if( func_num_args() > 0 ) {
-		echo func_get_arg(0) . "<br>";
+		Logger(func_get_arg(0));
 	}
 
 	$dump_server = 0;
@@ -16,30 +16,30 @@ function DumpPostVars() {
 	ksort( $_POST );
 	$i = 0;
 	foreach( $_POST as $var => $val ) {
-		if( $i++ == 0 ) { echo "---------------------------------------\n<br>"; }
+		if( $i++ == 0 ) { Logger("---------------------------------------"); }
 		if( preg_match( "/userpass/i", $var ) || preg_match( "/password/i", $var ) ) {
-			printf( "dpv:  %-20s: %s, length: %d<br>\n", $var, "******", strlen($val) );
+			Logger(sprintf( "dpv:  %-20s: %s, length: %d", $var, "******", strlen($val) ));
 		} else {
 			if( is_array( $val ) ) {
 				foreach( $val as $k => $v ) {
-					printf( "dpav:  %-20s[%s]: %s<br>\n", $var, $k, $v );
+					Logger(sprintf( "dpav:  %-20s[%s]: %s", $var, $k, $v ));
 				}
 			}
 			else
 			{
-				printf( "dpv:  %-20s: %s<br>\n", $var, $val );
+				Logger(sprintf( "dpv:  %-20s: %s", $var, $val ));
 			}
 		}
 	}
 
 	$i = 0;
 	if( $dump_server > 0 ) {
-		if( $i++ == 0 ) { echo "---------------------------------------\n<br>"; }
+		if( $i++ == 0 ) { Logger("---------------------------------------"); }
 		foreach( $gServer as $var => $val ) {
 			if( $var != "passwd" ) {
-				printf( "dsv:  %-20s: %s<br>\n", $var, $val );
+				Logger(sprintf( "dsv:  %-20s: %s", $var, $val ));
 			} else {
-				printf( "dsv:  %-20s: %s<br>\n", $var, "******" );
+				Logger(sprintf( "dsv:  %-20s: %s", $var, "******" ));
 			}
 		}
 	}
@@ -47,15 +47,15 @@ function DumpPostVars() {
 	$i = 0;
 	if( isset( $_SESSION ) ) {
 		foreach( $_SESSION as $var => $val ) {
-			if( $i++ == 0 ) { echo "---------------------------------------\n<br>"; }
+			if( $i++ == 0 ) { Logger( "---------------------------------------"); }
 			if( $var != "passwd" ) {
-				printf( "sess:  %-20s: %s<br>\n", $var, $val );
+				Logger(sprintf( "sess:  %-20s: %s", $var, $val ));
 			} else {
-				printf( "sess:  %-20s: %s<br>\n", $var, "******" );
+				Logger(sprintf( "sess:  %-20s: %s", $var, "******" ));
 			}
 		}
 	}
-	echo "</div>";
+	Logger( "</div>");
 	if( $GLOBALS['gTrace'] ) array_pop( $GLOBALS['gFunction'] );
 }
 ?>
