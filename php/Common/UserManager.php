@@ -454,8 +454,8 @@ function UserManagerEdit() {
                             $subject = "Password Reset for " . $GLOBALS['gTitle'];
                             $body = "<p>Someone requested that the password be reset.</p>
 			<p>If this was a mistake, just ignore this email and nothing will happen.</p>
-			<p>To reset your password, visit the following address: <a href='" . DIR . $GLOBALS['gSourceCode'] . "?action=Reset&key=$token'>" .
-                                    DIR . $GLOBALS['gSourceCode'] . "</a></p>";
+			<p>To reset your password, visit the following address: <a href='" . $GLOBALS['gSourceCode'] . "?action=Reset&key=$token'>" .
+                                    $GLOBALS['gSourceCode'] . "</a></p>";
 
                             $mail = new Mail();
                             $mail->setFrom(SITEEMAIL);
@@ -585,6 +585,7 @@ function UserManagerLoad($userid) {
     $GLOBALS['gUserName'] = $row['username'];
     $GLOBALS['gLastLogin'] = $row['lastlogin'];
     $GLOBALS['gActive'] = $row['active'];
+    $GLOBALS['gDebug'] = $row['debug'];
 
     $query = 'select privileges.level, privileges.enabled from privileges, access';
     $query .= ' where access.privid = privileges.id and access.userid = :uid';
@@ -784,7 +785,7 @@ function UserManagerNew() {
                 $subject = "Registration Confirmation for " . $GLOBALS['gTitle'];
                 $body = "<p>Thank you for registering at " . $GLOBALS['gTitle'] . ".</p>";
                 $body .= "<p>To activate your account, please click on this link: ";
-                $body .= "<a href='" . DIR . $GLOBALS['gSourceCode'] . "?action=activate&x=$id&y=$activasion'>";
+                $body .= "<a href='" . $_SERVER['HTTP_REFERER'] . "?action=activate&x=$id&y=$activasion'>";
                 $body .= "activate</a></p>";
                 $body .= "<p>Regards Site Admin</p>";
 
@@ -1696,6 +1697,7 @@ function UserManagerNew() {
 
                 $GLOBALS['gAction'] = 'Start';
                 if ($user->isValidUsername($username)) {
+                    MyDebug('* valid username');
                     if (!isset($password)) {
                         $gError[] = 'A password must be entered';
                     }
