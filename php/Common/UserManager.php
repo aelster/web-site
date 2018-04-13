@@ -20,8 +20,7 @@ function UserManager() {
     if ($GLOBALS['gTrace']) {
         $GLOBALS['gFunction'][] = __FUNCTION__;
         Logger();
-    }
-
+    }    
     $area = func_get_arg(0);
 
     switch ($area) {
@@ -93,7 +92,7 @@ function UserManager() {
             echo "Uh-oh:  Contact Andy regarding UserManager( $area )<br>";
             break;
     }
-
+    
     if ($GLOBALS['gTrace'])
         array_pop($GLOBALS['gFunction']);
     if ($area == 'authorized')
@@ -254,9 +253,9 @@ function UserManagerDisplay() {
         $GLOBALS['gFunction'][] = __FUNCTION__;
         Logger();
     }
-
+    echo "<div class=center>";
+    
     echo "<h2>User Control</h2>";
-    echo "<div class=CommonV2>";
     echo "<input type=hidden name=from value=Users>";
     echo sprintf("<input type=hidden name=userid value='%d'>", $GLOBALS['gUserId']);
 
@@ -277,7 +276,9 @@ function UserManagerDisplay() {
         "addAction('New')"
     ];
     echo sprintf("<input type=button onClick=\"%s\" value='New User'>", join(';', $acts));
-
+    echo "<br><br>";
+    echo "</div>";
+    
     $vprivs = array();
     $vlevels = array();
     $stmt = DoQuery('select name, id, level from privileges order by level desc');
@@ -296,11 +297,14 @@ function UserManagerDisplay() {
         $query .= " users.userid = access.userid and access.privid = :pid order by users.username ASC";
         $stmt = DoQuery($query, array(':pid' => $level));
         if ($stmt->rowCount() > 0) {
+            echo "<div class=$name>";
             echo "<h3>$name</h3>";
 
-            echo "\n<table class=sortable>";
+            echo "<table class=usermanager>";
+            
+            echo "<thead>";
             echo "<tr>";
-            echo "<th>#</th>";
+            echo "<th>Id</th>";
             echo "<th>Username</th>";
             echo "<th>First</th>";
             echo "<th>Last</th>";
@@ -309,20 +313,21 @@ function UserManagerDisplay() {
             echo "<th>Last Login</th>";
             echo "<th>Disabled</th>";
             echo "<th>Actions</th>";
-            echo "</tr>\n";
+            echo "</tr>";
+            echo "</thead>";
         }
-
+        echo "<tbody>";
         $j = 1;
         while ($usr = $stmt->fetch(PDO::FETCH_ASSOC)) {
             $id = $usr['userid'];
             $jscript = "onChange=\"addField('$id');toggleBgRed('update');\"";
 
             echo "<tr>\n";
-            printf("  <td class=sorttable_nosort>$j</td>\n");
-            printf("  <td sorttable_customkey=\"%s\"><input type=text name=u_%d_username value=\"%s\" $jscript size=10></td>\n", $usr['username'], $id, $usr['username']);
-            printf("  <td sorttable_customkey=\"%s\"><input type=text name=u_%d_first value=\"%s\" $jscript size=10></td>\n", $usr['first'], $id, $usr['first']);
-            printf("  <td sorttable_customkey=\"%s\"><input type=text name=u_%d_last value=\"%s\" $jscript size=10></td>\n", $usr['last'], $id, $usr['last']);
-            printf("  <td sorttable_customkey=\"%s\"><input type=text name=u_%d_email value=\"%s\" $jscript size=20></td>\n", $usr['email'], $id, $usr['email']);
+            printf("  <td>$id</td>\n");
+            printf("  <td><input type=text name=u_%d_username value=\"%s\" $jscript size=10></td>\n", $id, $usr['username']);
+            printf("  <td><input type=text name=u_%d_first value=\"%s\" $jscript size=10></td>\n", $id, $usr['first']);
+            printf("  <td><input type=text name=u_%d_last value=\"%s\" $jscript size=10></td>\n", $id, $usr['last']);
+            printf("  <td><input type=text name=u_%d_email value=\"%s\" $jscript size=25></td>\n", $id, $usr['email']);
 
             printf("  <td><select name=u_%d_privid $jscript>", $id);
             foreach ($vprivs as $name => $privid) {
@@ -347,7 +352,7 @@ function UserManagerDisplay() {
             echo "  <td align=center>$str</td>\n";
 
             $checked = $usr['disabled'] ? "checked" : "";
-            printf("  <td class=c><input type=checkbox name=u_%d_disabled value=1 $checked $jscript ></td>\n", $id);
+            printf("  <td style='text-align: center;'><input type=checkbox name=u_%d_disabled value=1 $checked $jscript ></td>\n", $id);
 
             echo "  <td>";
             $acts = array();
@@ -361,7 +366,9 @@ function UserManagerDisplay() {
             echo "</tr>\n";
             $j++;
         }
+        echo "</tbody>";
         echo "</table>";
+        echo "</div>";
     }
     echo "</div>";
     if ($GLOBALS['gTrace'])
@@ -972,6 +979,7 @@ function UserManagerNew() {
                     Logger();
                 }
                 ?>
+                <div class="center">
                 <h2>Privilege Control</h2>
                 <input type=hidden name=from value=UserManagerPrivileges>
                 <input type=hidden name=userid id=userid>
@@ -988,9 +996,9 @@ function UserManagerNew() {
                 echo sprintf("<input type=button onClick=\"%s\" id=update value=Update>", join(';', $acts));
 
                 echo "<br><br>";
-
-                echo "<div class=CommonV2>";
-                echo "<table>";
+                echo "</div>";
+                
+                echo "<table class=privileges>";
                 echo "<tr>";
                 echo "<th>Name</th>";
                 echo "<th>Level</th>";

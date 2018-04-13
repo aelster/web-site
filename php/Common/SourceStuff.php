@@ -106,11 +106,12 @@ function SourceDisplay() {
     }
     global $n, $tot_files, $already_scanned, $web_base, $local_base;
 
+    echo "<div class=center>";
+
     $web_base = "";
     $GLOBALS['gMasterSum'] = 0;
-    echo "<div class=source>";
+
     $func = $_POST['func'];
-    echo "<div class=CommonV2>";
     echo "<input type=button value=Back onclick=\"setValue('from', '$func');addAction('Back');\">";
 
     $acts = array();
@@ -119,10 +120,15 @@ function SourceDisplay() {
     $acts[] = "addAction('Main')";
     echo sprintf("<input type=button onClick=\"%s\" value=Refresh>", join(';', $acts));
 
+ 
     $gMasterSum = 0;
     echo "<h2>Combined checksum:  <span id=master_sum></span></h2>";
 
-    echo "<table>";
+    echo "</div>";
+    
+    $hiddenDivs = [];
+
+    echo "<table class=sourcestuff>";
     echo "<tr>";
     echo "  <th>#</th>";
     echo "  <th>Path</th>";
@@ -140,8 +146,9 @@ function SourceDisplay() {
     foreach ($tmp as $dir) {
         if (preg_match('/Templates/', $dir))
             continue;
-        SourceDisplaySub($dir);
+        SourceDisplaySub($dir, $hiddenDivs);
     }
+
 
     $str = get_include_path();
     $ps = PATH_SEPARATOR;
@@ -166,7 +173,7 @@ function SourceDisplay() {
         foreach ($tmp as $dir) {
             if (preg_match('/overlib/', $dir))
                 continue;
-            SourceDisplaySub($dir);
+            SourceDisplaySub($dir, $hiddenDivs);
         }
     }
 
@@ -177,26 +184,34 @@ function SourceDisplay() {
         foreach ($tmp as $dir) {
             if (preg_match('/overlib/', $dir))
                 continue;
-            SourceDisplaySub($dir);
+            SourceDisplaySub($dir, $hiddenDivs);
         }
     }
 
     echo "</table>";
     echo "<br>";
-    echo "Total files: $tot_files";
+    echo "<p style='text-align: center;'>Total files: $tot_files</p>";
 
     echo sprintf("<script type=\"text/javascript\">setHtml('master_sum','%s');</script>", dechex($GLOBALS['gMasterSum']));
+
+    echo "</div>"; # sourcestuff
+
+    foreach ($hiddenDivs as $str) {
+        echo "$str\n";
+    }
+
     if ($GLOBALS['gTrace'])
         array_pop($GLOBALS['gFunction']);
 }
 
-function SourceDisplaySub($dir) {
+function SourceDisplaySub($dir, &$hiddenDivs) {
     if ($GLOBALS['gTrace']) {
         $GLOBALS['gFunction'][] = __FUNCTION__;
         Logger();
     }
     global $n, $tot_files, $already_scanned, $web_base, $local_base;
 
+# Don't process a directory twice
     if (!empty($already_scanned[$dir])) {
         if ($GLOBALS['gTrace'])
             array_pop($GLOBALS['gFunction']);
@@ -215,6 +230,11 @@ function SourceDisplaySub($dir) {
         }
     }
     $ftypes = array();
+
+# Walk over all the files in the directory.
+# Exclude specific types/name matches
+# Save an array of file types
+# Keep sub-totaled MD5 by file type as well as aggregate for the directory
 
     $body = array();
     $dh = opendir($dir);
@@ -271,8 +291,12 @@ function SourceDisplaySub($dir) {
         $$var += hexdec($tmp[7]);
     }
 
+    # Build the pop-up
+
+    $hdx = count($hiddenDivs) + 1;
     $text = array();
-    $text[] = "<div class=source>";
+    $text[] = "<div class='sourcestuffdetail hidden' id=hidden$hdx onmouseout=\"showHideDiv(event,$hdx);\">";
+    $text[] = "<h2>$cap</h2>";
     $num_files = 0;
 
     ksort($ftypes);
@@ -281,23 +305,25 @@ function SourceDisplaySub($dir) {
         asort($$var);
         $sum = "sum_$type";
         $text[] = sprintf("<h3>%s files (%s)</h3>", $type, dechex($$sum));
-        $text[] = "<table>";
+        $text[] = "<table class=sourcestuffdetail>";
         $text[] = "<tr>";
-        $text[] = "<th>Pre</th>";
         $text[] = "<th>#</th>";
         $text[] = "<th>Source File</th>";
         $text[] = "<th>Mod Date</th>";
         $text[] = "<th>Local MD5</th>";
         $text[] = "</tr>";
 
+        $seen = [];
+
         $body = array();
         foreach ($$var as $idx => $ffile) {
             $web = preg_match('/htdocs/', $ffile) || preg_match('/wwwroot/', $ffile);
+
             if ($web) {
                 if (empty($web_base)) {
                     $base = basename($ffile);
                     $web_base = preg_replace("/$base/", "", $ffile);
-                    echo "web base: [$web_base]<br>";
+                    echo "<p style='text-align: center;'>web base: [$web_base]</p>";
                 }
             } else {
                 if (empty($local_base)) {
@@ -305,9 +331,10 @@ function SourceDisplaySub($dir) {
                     $xx = preg_split("/\\" . DIRECTORY_SEPARATOR . "/", $dir);
                     $base = array_pop($xx);
                     $local_base = preg_replace("/$base/", "", $dir);
-                    echo "local base( $base ): [$local_base]<br>";
+                    echo "<p  style='text-align: center;'>local base( $base ): [$local_base]</p>";
                 }
             }
+
             $local = md5_file($ffile);
             $mtime = filemtime($ffile);
             $line = "<td>" . basename($ffile) . "</td>";
@@ -315,8 +342,7 @@ function SourceDisplaySub($dir) {
             $tmp = str_split($local, 4);
             $line .= "<td class=md5>" . join(" ", $tmp) . "</td>";
             $hsum += hexdec($tmp[7]);
-            $body[$ffile . $mtime] = $line;
-#            $body[ $ffile ] = $line;
+            $body[$ffile] = $line;
             $num_files++;
             $tot_files++;
         }
@@ -327,8 +353,11 @@ function SourceDisplaySub($dir) {
             $text[] = sprintf("<tr><td>%d</td>%s</tr>", $i, $line);
         }
         $text[] = "</table>";
+        $text[] = "<br>";
     }
     $text[] = "</div>";
+
+    $hiddenDivs[] = join('', $text);
 
     if ($num_files) {
         $n++;
@@ -337,15 +366,13 @@ function SourceDisplaySub($dir) {
         echo "<td>$n</td>";
         echo "<td>$dir</td>";
         echo "<td>" . SourceCleanPath($dir) . "</td>";
-        echo "<td class=c>$num_files</td>";
+        echo "<td  style='text-align: center;'>$num_files</td>";
         $tag = dechex($hsum);
-        $str = CVT_Str_to_Overlib(join('', $text));
-        echo "<td class=c>";
-        ?><a href="javascript:void(0);"
-           onmouseover="return overlib('<?php echo $str ?>', WIDTH, 900, STICKY, CAPTION, '<?php echo $cap ?>')"
-           onmouseout="return nd();"><?php echo $tag ?></a>
-        <?php
-        echo "</td>";
+        $jsx = [];
+        $jsx[] = "onmouseenter=\"showHideDiv(event,$hdx)\"";
+        $jsx[] = "onmouseout=\"showHideDiv(event,$hdx)\"";
+        $js = join(';', $jsx);
+        echo "<td style='text-align: center;' $js><a href='#top'>$tag</a></td>";
         echo "</tr>";
 
         closedir($dh);
@@ -356,4 +383,5 @@ function SourceDisplaySub($dir) {
     if ($GLOBALS['gTrace'])
         array_pop($GLOBALS['gFunction']);
 }
+
 ?>

@@ -13,8 +13,8 @@ function MyDebug() {
     $gDebugWindow = $GLOBALS['gDebugWindow'];
     
     if( $gFunc == 'display' ) {
+        echo "<div class=center>";
         echo "<h2>Debug Control</h2>";
-        echo "<div class=CommonV2>";
         
         echo "<input type=button value=Back onclick=\"setValue('from', 'MyDebug');addAction('Back');\">";
         
@@ -27,7 +27,10 @@ function MyDebug() {
         $js = sprintf("onClick=\"%s\"", join(';', $jsx));
         echo "<input type=button value=Update $tag $js>";
         echo "<br><br>";
-        echo "<table>";
+        
+        echo "</div>";
+        
+        echo "<table class=debug>";
         echo "<tr>";
         echo "  <th>Option</th>";
         echo "  <th>Current</th>";
@@ -160,7 +163,6 @@ function MyDebug() {
         echo "</tr>";
         
         echo "</table>";
-        echo "</div>";
         
     } elseif( $gFunc == 'update' ) {
         $tmp2 = preg_split('/,/', $_POST['fields'], NULL, PREG_SPLIT_NO_EMPTY);
