@@ -91,3 +91,10 @@ td.dbg-part {
     text-align: center;
 }
 
+td.c {
+    text-align: center;
+}
+
+td.r {
+    text-align: right;
+}

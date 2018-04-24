@@ -618,7 +618,7 @@ function UserManagerLogin() {
         return;
     }
     ?>
-                <div class="container">
+                <div class=center>
 
                     <div class="row">
 

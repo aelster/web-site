@@ -8,9 +8,11 @@ function MyDebug() {
     $gUserId = $GLOBALS['gUserId'];
     $gFunc = $GLOBALS['gFunc'];
     $gDebug = $GLOBALS['gDebug'];
+    $gDebugAll = $GLOBALS['gDebugAll'];
     $gDebugInLine = $GLOBALS['gDebugInLine'];
     $gDebugErrorLog = $GLOBALS['gDebugErrorLog'];
     $gDebugWindow = $GLOBALS['gDebugWindow'];
+    $gDebugHTML = $GLOBALS['gDebugHTML'];
     
     if( $gFunc == 'display' ) {
         echo "<div class=center>";
@@ -45,9 +47,9 @@ function MyDebug() {
         if( $gDebug == 0 ) {
             $state = "All Off";
             $options[] = [ 'label' => '-- select --', 'value' => -1 ];
-            $options[] = [ 'label' => 'All On', 'value' => 7 ];
+            $options[] = [ 'label' => 'All On', 'value' => $gDebugAll ];
             $class = 'dbg-off';
-        } elseif ($gDebug == $GLOBALS['gDebugMask'] ) {
+        } elseif ($gDebug == $GLOBALS['gDebugAll'] ) {
             $state = "All On";
             $options[] = [ 'label' => '-- select --', 'value' => -1 ];
             $options[] = [ 'label' => 'All Off', 'value' => 0 ];
@@ -55,7 +57,7 @@ function MyDebug() {
         } else {
             $state = "Part On";                        
             $options[] = [ 'label' => '-- select --', 'value' => -1 ];
-            $options[] = [ 'label' => 'All On', 'value' => 7 ];
+            $options[] = [ 'label' => 'All On', 'value' => $gDebugAll ];
             $options[] = [ 'label' => 'All Off', 'value' => 0 ];
             $class = 'dbg-part';
         }
@@ -147,6 +149,35 @@ function MyDebug() {
         $tag = MakeTag("$fld");
         
         $enabled = ($gDebug & $gDebugWindow) ? 1 : 0;
+        if( $enabled ) {
+            echo "<td class=dbg-on>On</td>";
+            echo "<td><select $tag $js>";
+            echo "<option value=-1>-- select --</option>";
+            echo "<option value=0>Turn Off</option>";
+        } else {
+            echo "<td class=dbg-off>Off</td>";
+            echo "<td><select $tag $js>";
+            echo "<option value=-1>-- select --</option>";
+            echo "<option value=1>Turn On</option>";
+        }
+        echo "</select>";
+        echo "</td>";
+        echo "</tr>";
+        
+#==================================================================
+        $fld = 'DebugHTML';
+        
+        echo "<tr>";
+        echo "  <td>HTML</td>";
+
+        $jsx = array();
+        $jsx[] = "setValue('from','MyDebug')";
+        $jsx[] = "addField('$fld')";
+        $jsx[] = "toggleBgRed('update')";
+        $js = sprintf("onChange=\"%s\"", join(';', $jsx));
+        $tag = MakeTag("$fld");
+        
+        $enabled = ($gDebug & $gDebugHTML) ? 1 : 0;
         if( $enabled ) {
             echo "<td class=dbg-on>On</td>";
             echo "<td><select $tag $js>";

@@ -302,6 +302,28 @@ function checkEnter(e) { //e is event object passed from function invocation
     }
 }
 
+function scrollableTable() {
+    var done = 0;
+    var col_idx = 1;
+    while( ! done ) {
+        var v = document.getElementsByClassName('col' + col_idx );
+        if( v.length == 0 ) {
+            done = 1;
+            continue;
+        }
+        var max_width = 0;
+        for( i = 0; i < v.length; i++ ) {
+            if( v[i].clientWidth > max_width ) {
+                max_width = v[i].clientWidth;
+            }
+        }
+        for( i = 0; i < v.length; i++ ) {
+            v[i].style.width = max_width;
+        }
+        col_idx++;
+    }
+}
+
 function toggleDetail(_tag) {
     var e, i;
     debug('toggleDetail(', _tag, ')');

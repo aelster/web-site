@@ -5,6 +5,7 @@ function Logger() {
     $gDebugInLine = $GLOBALS['gDebugInLine'];
     $gDebugErrorLog = $GLOBALS['gDebugErrorLog'];
     $gDebugWindow = $GLOBALS['gDebugWindow'];
+    $gDebugHTML = $GLOBALS['gDebugHTML'];
 
     if( $gDebug & $gDebugInLine ) {
         echo "<div align=left>";
@@ -34,6 +35,18 @@ function Logger() {
         echo " debug('$str');";
         echo "</script>";
     }
+
+        if( $gDebug & $gDebugHTML ) {
+        if (func_num_args() > 0) {
+            $str = func_get_arg(0);
+        } else {
+            $str = join('>', $GLOBALS['gFunction']);
+        }
+        echo "<!--\n";
+        echo "$str\n";
+        echo "-->\n";
+    }
+
 }
 
 ?>
