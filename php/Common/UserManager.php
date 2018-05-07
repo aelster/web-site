@@ -622,7 +622,7 @@ function UserManagerLogin() {
 
                     <div class="row">
 
-                        <div class="col-xs-12 col-sm-8 col-md-6 col-sm-offset-2 col-md-offset-3">
+                        <div>
                             <h2>Please Login</h2>
                             <p><input type=button value="Forgot your password?"
     <?php
@@ -908,9 +908,13 @@ function UserManagerNew() {
                 Logger();
             }
             SessionStuff('logout');
-            echo "<h3>You have been successfully logged out</h3>";
+            echo "<div class=center>";
+            echo "<div class=row>";
+            echo "<h2>You have been successfully logged out</h2>";
             ?>
             <input type=submit name=action value=Continue>
+            </div>
+    </div>
             <?php
             if ($GLOBALS['gTrace'])
                 array_pop($GLOBALS['gFunction']);

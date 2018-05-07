@@ -8,6 +8,14 @@ and open the template in the editor.
     Author     : andy
 */
 
+body {
+    font-family: "Helvetica Neue", "Helvetica", "Arial", "sans-serif";
+    font-size: 14px;
+    background-color: #fff;
+    color: #000;
+    line-height: 1.2;
+}
+
 h3 {
     text-align: center;
 }
@@ -101,4 +109,25 @@ td.r {
 
 input.r {
     text-align: right;
+}
+
+.row h2 {
+    font-size: 30px;
+    font-weight: 500;
+}
+
+.row input {
+    font-size: 14px;
+}
+
+.form-group {
+    margin-bottom: 15px;
+}
+
+.input-lg {
+    height: 46px;
+    padding: 10px 16px;
+    font-size: 18px;
+    line-height: 1.33;
+    border-radius: 6px;
 }
