@@ -318,7 +318,7 @@ function scrollableTable() {
             }
         }
         for( i = 0; i < v.length; i++ ) {
-            v[i].style.width = max_width;
+            v[i].style.width = max_width + 'px';
         }
         col_idx++;
     }

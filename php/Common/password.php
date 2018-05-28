@@ -3,6 +3,9 @@ if (!defined('PASSWORD_BCRYPT')) {
         define('PASSWORD_BCRYPT', 1);
         define('PASSWORD_DEFAULT', PASSWORD_BCRYPT);
 }
+$tag = 'LOADED_' . __FILE__;
+if( defined($tag)) return;
+define($tag,1);
 
 Class Password {
 

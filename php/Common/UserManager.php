@@ -421,6 +421,8 @@ function UserManagerEdit() {
                     Logger();
                 }
 
+                global $gMailAdmin, $gMailAdminName, $gMailLive;
+            
                 $area = $_POST['area'];
                 $error = array();
 
@@ -435,8 +437,8 @@ function UserManagerEdit() {
                     if (!filter_var($_POST['email'], FILTER_VALIDATE_EMAIL)) {
                         $error[] = 'Please enter a valid email address';
                     } else {
-                        $stmt = DoQuery('SELECT email, password FROM users WHERE email = :email', array(':email' => $_POST['email']));
-                        list( $email, $password ) = $stmt->fetch(PDO::FETCH_NUM);
+                        $stmt = DoQuery('SELECT * FROM users WHERE email = :email', array(':email' => $_POST['email']));
+                        $row = $stmt->fetch(PDO::FETCH_ASSOC);
 
                         if ($GLOBALS['gPDO_num_rows'] == 0) {
                             $error[] = 'Email provided is not recognised.';
@@ -445,48 +447,76 @@ function UserManagerEdit() {
                     //if no errors have been created carry on
                     if (empty($error)) {
                         //create the activation code
-                        $token = hash_hmac('SHA256', $GLOBALS['user']->generate_entropy(8), $password); //Hash and Key the random data
+                        $token = hash_hmac('SHA256', $GLOBALS['user']->generate_entropy(8), $row['password']); //Hash and Key the random data
                         $storedToken = hash('SHA256', ($token)); //Hash the key stored in the database, the normal value is sent to the user
-
-                        try {
 
                             $query = "UPDATE users SET resetToken = :token, resetComplete=0 WHERE email = :email";
                             DoQuery($query, array(
-                                ':email' => $email,
+                                ':email' => $row['email'],
                                 ':token' => $storedToken
                             ));
-
-                            //send email
-                            $to = $email;
+                            
                             $subject = "Password Reset for " . $GLOBALS['gTitle'];
-                            $body = "<p>Someone requested that the password be reset.</p>
-			<p>If this was a mistake, just ignore this email and nothing will happen.</p>
-			<p>To reset your password, visit the following address: <a href='" . $GLOBALS['gSourceCode'] . "?action=Reset&key=$token'>" .
-                                    $GLOBALS['gSourceCode'] . "</a></p>";
+                            $recipients[$row['email']] = $row['first'] . " " . $row['last'];
+ 
+$signature = [];
+$signature[] = "";
+$signature[] = "";
+$signature[] = "<span style='font-family:george,serif; font-size:15px; font-weight:900;'><i>Andy Elster";
+$signature[] = "Co-Founder, CFO, Board of Directors</i></span>";
+$signature[] = "";
+$signature[] = "<img src=\"cid:sigimg\" width='200' height='33'/>";
+$signature[] = '<div style="margin-left:52px;"><font face="tahoma, sans-serif" color="#6aa84f" size="small">2625 N. Tustin Avenue';
+$signature[] = "Santa Ana, CA 92705";
+$signature[] = "Mobile: (949) 295-5443";
+$signature[] = "https://irvinehebrewday.org/";
+$signature[] = "</font>";
+$signature[] = "</div>";
 
-                            $mail = new Mail();
-                            $mail->setFrom(SITEEMAIL);
-                            $mail->addAddress($to);
-                            $mail->subject($subject);
-                            $mail->body($body);
-                            $mail->send();
+$body = "<p>Someone requested that the password be reset.</p>";
+$body .= "<p>If this was a mistake, just ignore this email and nothing will happen.</p>";
+$body .= "<p>To reset your password, visit the following address: <a href='" . $GLOBALS['gSourceCode'];
+$body .= "?action=Reset&key=$token'>" . $GLOBALS['gSourceCode'] . "</a></p>";
+$body .= "<br>" . join('<br>', $signature);
 
-                            if ($GLOBALS['gDebug']) {
-                                echo "** mail sent **<br>";
-                            }
+            unset($mail);
+            $mail = new PHPMailer\PHPMailer\PHPMailer();
+            try {
+                //Server settings
+                $mail->Debugoutput = 'error_log';
+                $mail->isSMTP(true);
+                $mail->isHTML(true);
 
-                            //redirect to index page
-                            // header('Location: register.php?action=reset');
-                            $GLOBALS['gError'][] = "Please check your inbox for a reset link.";
-                            return;
+                //Receipients
+                $mail->setFrom($gMailAdmin, $gMailAdminName);
+                if ($gMailLive) {
+                    foreach ($recipients as $email => $name) {
+                        $mail->addAddress($email, $name);
+                    }
+                    $mail->AddCC($gMailAdmin, $gMailAdminName);
+                } else {
+                    $mail->addAddress($gMailAdmin, $gMailAdminName);
+                }
+                //Attachments
+                $mail->AddEmbeddedImage('assets/SignatureImage.png', 'sigimg', 'assets/SignatureImage.png');
 
-                            //else catch the exception and show the error.
-                        } catch (PDOException $e) {
-                            $error[] = $e->getMessage();
-                        }
+                //Content
+                $mail->Subject = $subject;
+                $mail->Body = $body;
+
+                if (!$mail->send()) {
+                    $err = 'Message could not be sent.';
+                    $err .= 'Mailer Error: ' . $mail->ErrorInfo;
+                    echo $err;
+                }
+            } catch (phpmailerException $e) {
+                echo $e->errorMessage();
+            } catch (Exception $e) {
+                echo $e->getMessage();
+            }
                     }
 #        }
-                }
+                } else {
                 ?>
             <div class="container">
 
@@ -495,7 +525,7 @@ function UserManagerEdit() {
                     <div class="col-xs-12 col-sm-8 col-md-6 col-sm-offset-2 col-md-offset-3">
                         <form role="form" method="post" action="" autocomplete="off">
                             <h2>Reset Password</h2>
-                            <p><a href='<?php echo DIR . $GLOBALS['gSourceCode'] ?>'>Back to login page</a></p>
+                            <p><a href='<?php $GLOBALS['gSourceCode'] ?>'>Back to login page</a></p>
                             <hr>
 
                             <?php
@@ -544,6 +574,7 @@ function UserManagerEdit() {
             </div>
 
             <?php
+                }   
             $GLOBALS['gError'] = $error;
             if ($GLOBALS['gTrace']) {
                 array_pop($GLOBALS['gFunction']);
@@ -617,33 +648,26 @@ function UserManagerLogin() {
         UserManagerNew();
         return;
     }
-    ?>
-                <div class=center>
-
-                    <div class="row">
-
-                        <div>
-                            <h2>Please Login</h2>
-                            <p><input type=button value="Forgot your password?"
-    <?php
+    
     $jsx = array();
     $jsx[] = "setValue('area','display')";
     $jsx[] = "addAction('forgot')";
     $js = sprintf("onClick=\"%s\"", join(';', $jsx));
-    echo $js . ">";
     ?>
-                            </p>
-                            <hr>
-
+<div class=center>
+    <div class="row" style="margin-left: 25%; width:50%;">
+        <div class="form-group">
+            <h2>Please Login</h2>
+            <input type=button <?php echo $js?> class="form-control input-lg" value="Forgot your password?" style="height:40px;">
     <?php
     
     //check for any errors
     if (isset($GLOBALS['gError'])) {
         foreach ($GLOBALS['gError'] as $error) {
-            echo '<p class="bg-danger">' . $error . '</p>';
+            echo '<h2 class="bg-danger">' . $error . '</h2>';
         }
     }
-
+    
     if (isset($GLOBALS['gArea'])) {
 
         //check the action
@@ -651,7 +675,7 @@ function UserManagerLogin() {
             case 'active':
                 echo "<h2 class='bg-success'>Your account is now active you may now log in.</h2>";
                 break;
-            case 'reset':
+            case 'check':
                 echo "<h2 class='bg-success'>Please check your inbox for a reset link.</h2>";
                 break;
             case 'resetAccount':
@@ -660,13 +684,18 @@ function UserManagerLogin() {
         }
     }
     ?>
-
-                            <div class="form-group">
-                                <input type="text" name="username" id="username" class="form-control input-lg" placeholder="User Name" value="<?php
+        </div>
+        <hr>
+        <div class="form-group">
+            <input type="text" name="username" id="username" class="form-control input-lg" placeholder="User Name" 
+                   value="<?php
     if (isset($gError)) {
         echo htmlspecialchars($_POST['username'], ENT_QUOTES);
     }
-    ?>" tabindex="1">
+    $jsx = array();
+    $jsx[] = "addAction('Login')";
+    $js = sprintf("onClick=\"%s\"", join(';', $jsx));
+   ?>" tabindex="1">
                             </div>
 
                             <div class="form-group">
@@ -675,18 +704,9 @@ function UserManagerLogin() {
 
 
                             <hr>
-                            <div class="row">
-                                <div class="col-xs-6 col-md-6">
-                                    <input type=button value="Login"
-    <?php
-    $jsx = array();
-    $jsx[] = "addAction('Login')";
-    $js = sprintf("onClick=\"%s\"", join(';', $jsx));
-    echo $js
-    ?>
-                                           class="btn btn-primary btn-block btn-lg" tabindex="5">
+                                <div class="form-group">
+                                    <input type=button value="Login" <?php echo $js?> class="btn btn-primary btn-block btn-lg" tabindex="5">
                                 </div>
-                            </div>
                         </div>
                     </div>
 
@@ -796,12 +816,16 @@ function UserManagerNew() {
                 $body .= "activate</a></p>";
                 $body .= "<p>Regards Site Admin</p>";
 
-                $mail = new Mail();
+                            $mail = new PHPMailer\PHPMailer\PHPMailer();
                 $mail->setFrom(SITEEMAIL);
                 $mail->addAddress($to);
-                $mail->subject($subject);
-                $mail->body($body);
-                $mail->send();
+                $mail->subject = $subject;
+                $mail->body = $body;
+            if (!$mail->send()) {
+                $err = 'Message could not be sent.';
+                $err .= 'Mailer Error: ' . $mail->ErrorInfo;
+                echo $err;
+            }
 
                 //redirect to index page
                 $GLOBALS['gAction'] = 'Main';
@@ -910,7 +934,7 @@ function UserManagerNew() {
             SessionStuff('logout');
             echo "<div class=center>";
             echo "<div class=row>";
-            echo "<h2>You have been successfully logged out</h2>";
+            echo "<h2 class='bg-success'>You have been successfully logged out</h2>";
             ?>
             <input type=submit name=action value=Continue>
             </div>
@@ -1142,6 +1166,7 @@ function UserManagerNew() {
                 error_log('in reset');
 //if logged in redirect to members page
                 if ($GLOBALS['user']->is_logged_in()) {
+                    error_log('is_logged_in');
                     return;
                 }
                 error_log('not logged in');
@@ -1190,7 +1215,7 @@ function UserManagerNew() {
 
                     try {
 
-                        $query = "UPDATE users SET password = :hashedpassword, resetComplete = 1  WHERE resetToken = :token";
+                        $query = "UPDATE users SET password = :hashedpassword, resetComplete = 1, active = 'YES'  WHERE resetToken = :token";
                         DoQuery($query, array(
                             ':hashedpassword' => $hashedpassword,
                             ':token' => $row['resetToken']
@@ -1199,8 +1224,8 @@ function UserManagerNew() {
                         //redirect to index page
 #                header('Location: index.php?action=resetAccount');
                         $GLOBALS['gAction'] = 'Start';
+                        $GLOBALS['gArea'] = 'active';
                         return;
-                        exit;
 
                         //else catch the exception and show the error.
                     } catch (PDOException $e) {
@@ -1210,7 +1235,7 @@ function UserManagerNew() {
     }
                 ?>
 
-                <div class="container">
+                <div class="container center">
 
                     <div class="row">
 

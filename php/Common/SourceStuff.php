@@ -146,9 +146,10 @@ function SourceDisplay() {
     foreach ($tmp as $dir) {
         if (preg_match('/Templates/', $dir))
             continue;
+        if (preg_match('/tmp/', $dir))
+            continue;
         SourceDisplaySub($dir, $hiddenDivs);
     }
-
 
     $str = get_include_path();
     $ps = PATH_SEPARATOR;
@@ -158,9 +159,9 @@ function SourceDisplay() {
             continue;
         if (preg_match('/swift/i', $path))
             continue;
-        if (preg_match('/Swift/i', $path))
-            continue;
         if (preg_match('/fpdf/i', $path))
+            continue;
+        if (preg_match('/PHPMailer/i', $path))
             continue;
         if (preg_match('/usr\/lib/', $path))
             continue;
@@ -383,5 +384,3 @@ function SourceDisplaySub($dir, &$hiddenDivs) {
     if ($GLOBALS['gTrace'])
         array_pop($GLOBALS['gFunction']);
 }
-
-?>
