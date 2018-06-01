@@ -1,0 +1,11 @@
+#!/bin/bash
+
+if [ "$1" = "live" ]; then
+    args="-arv  --exclude .DS_Store"
+else
+    args="-arvn --exclude .DS_Store"
+fi
+
+path=`pwd`
+
+rsync $args * elsterne@elsternet.com:site/php --exclude-from=rsync.ignore

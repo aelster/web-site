@@ -252,6 +252,8 @@ function SourceDisplaySub($dir, &$hiddenDivs) {
             continue;
         if (preg_match("/\.ini$/", $file))
             continue;
+        if (preg_match("/\.ignore$/", $file))
+            continue;
         if (preg_match("/\.*z$/", $file))
             continue;
         if (preg_match("/kpf$/", $file))
@@ -274,8 +276,10 @@ function SourceDisplaySub($dir, &$hiddenDivs) {
             continue;
         if (preg_match("/.sql$/", $file))
             continue;
-        if (preg_match("/^local/", $file))
+        if (preg_match("/^local/", $file)) {
+            echo " ** Warning: local* files ignored [$dir/$file]<br>";
             continue;
+        }
         if (preg_match("/^.publish/", $file))
             continue;
         if (preg_match("/~$/", $file))

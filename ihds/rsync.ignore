@@ -1,0 +1,7 @@
+# Directories
+
+# Files
+local_ihds.php
+rsync.ignore
+local_update
+*~

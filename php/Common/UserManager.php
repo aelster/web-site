@@ -480,13 +480,8 @@ $body .= "?action=Reset&key=$token'>" . $GLOBALS['gSourceCode'] . "</a></p>";
 $body .= "<br>" . join('<br>', $signature);
 
             unset($mail);
-            $mail = new PHPMailer\PHPMailer\PHPMailer();
+            $mail = MyMailerNew();
             try {
-                //Server settings
-                $mail->Debugoutput = 'error_log';
-                $mail->isSMTP(true);
-                $mail->isHTML(true);
-
                 //Receipients
                 $mail->setFrom($gMailAdmin, $gMailAdminName);
                 if ($gMailLive) {
@@ -816,7 +811,8 @@ function UserManagerNew() {
                 $body .= "activate</a></p>";
                 $body .= "<p>Regards Site Admin</p>";
 
-                            $mail = new PHPMailer\PHPMailer\PHPMailer();
+                $mail = MyMailerNew();
+
                 $mail->setFrom(SITEEMAIL);
                 $mail->addAddress($to);
                 $mail->subject = $subject;
