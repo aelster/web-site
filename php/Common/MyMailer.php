@@ -14,3 +14,21 @@ function MyMailerNew() {
     
     return $mail;
 }
+
+function MyMailerSend($mail) {
+    if ($GLOBALS['gTrace']) {
+        $GLOBALS['gFunction'][] = __FUNCTION__;
+        Logger();
+    }
+    try {
+        if (!$mail->send()) {
+            $err = 'Message could not be sent.';
+            $err .= 'Mailer Error: ' . $mail->ErrorInfo;
+            echo $err;
+        }
+    } catch (phpmailerException $e) {
+        echo $e->errorMessage();
+    } catch (Exception $e) {
+        echo $e->getMessage();
+    }
+}
