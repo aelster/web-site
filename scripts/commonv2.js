@@ -305,6 +305,7 @@ function checkEnter(e) { //e is event object passed from function invocation
 function scrollableTable() {
     var done = 0;
     var col_idx = 1;
+    var table_width = 0;
     var v, max_width, skip;
     while( ! done ) {
         v = document.getElementsByClassName('col' + col_idx );
@@ -318,6 +319,7 @@ function scrollableTable() {
                 max_width = v[i].clientWidth;
             }
         }
+	table_width += max_width;
         skip = 0;
         for( i = 0; i < v.length; i++ ) {
             v[i].style.width = max_width + 'px';

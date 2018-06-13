@@ -1,9 +1,9 @@
 #!/bin/bash
 
 if [ "$1" = "live" ]; then
-    args="-arvL  --exclude .DS_Store"
+    args="-arvL"
 else
-    args="-arvLn --exclude .DS_Store"
+    args="-arvLn"
 fi
 
 path=`pwd`
