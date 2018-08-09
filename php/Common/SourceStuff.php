@@ -120,12 +120,12 @@ function SourceDisplay() {
     $acts[] = "addAction('Main')";
     echo sprintf("<input type=button onClick=\"%s\" value=Refresh>", join(';', $acts));
 
- 
+
     $gMasterSum = 0;
     echo "<h2>Combined checksum:  <span id=master_sum></span></h2>";
 
     echo "</div>";
-    
+
     $hiddenDivs = [];
 
     echo "<table class=sourcestuff>";
@@ -276,20 +276,22 @@ function SourceDisplaySub($dir, &$hiddenDivs) {
             continue;
         if (preg_match("/.sql$/", $file))
             continue;
-        if (preg_match("/^local/", $file)) {
-            echo " ** Warning: local* files ignored [$dir/$file]<br>";
-            continue;
-        }
         if (preg_match("/^.publish/", $file))
             continue;
         if (preg_match("/~$/", $file))
             continue;
-        list( $name, $type ) = preg_split('/\./', $file);
+        if (preg_match("/^local/", $file)) {
+            $name = $file;
+            $type = 'local';
+            $tmp = [0, 0, 0, 0, 0, 0, 0, 0];
+        } else {
+            list( $name, $type ) = preg_split('/\./', $file);
+            $local = md5_file($ffile);
+            $tmp = str_split($local, 4);
+        }
         $ftypes[$type] = 1;
         $var = "file_$type";
         ${$var}[] = $ffile;
-        $local = md5_file($ffile);
-        $tmp = str_split($local, 4);
         $var = "sum_$type";
         if (!isset($$var))
             $$var = 0;
@@ -340,11 +342,16 @@ function SourceDisplaySub($dir, &$hiddenDivs) {
                 }
             }
 
-            $local = md5_file($ffile);
+            if( preg_match( '/local_/', $ffile ) ) {
+                $local = 0;
+                $tmp = [0, 0, 0, 0, 0, 0, 0, 0];
+            } else {
+                $local = md5_file($ffile);
+                $tmp = str_split($local, 4);
+            }
             $mtime = filemtime($ffile);
             $line = "<td>" . basename($ffile) . "</td>";
             $line .= "<td class=normc>" . date("Y-M-j H:i", $mtime) . "</td>";
-            $tmp = str_split($local, 4);
             $line .= "<td class=md5>" . join(" ", $tmp) . "</td>";
             $hsum += hexdec($tmp[7]);
             $body[$ffile] = $line;
@@ -364,26 +371,26 @@ function SourceDisplaySub($dir, &$hiddenDivs) {
 
     $hiddenDivs[] = join('', $text);
 
-    if ($num_files) {
-        $n++;
+#    if ($num_files) {
+    $n++;
 
-        echo "<tr>";
-        echo "<td>$n</td>";
-        echo "<td>$dir</td>";
-        echo "<td>" . SourceCleanPath($dir) . "</td>";
-        echo "<td  style='text-align: center;'>$num_files</td>";
-        $tag = dechex($hsum);
-        $jsx = [];
-        $jsx[] = "onmouseenter=\"showHideDiv(event,$hdx)\"";
-        $jsx[] = "onmouseout=\"showHideDiv(event,$hdx)\"";
-        $js = join(';', $jsx);
-        echo "<td style='text-align: center;' $js><a href='#top'>$tag</a></td>";
-        echo "</tr>";
+    echo "<tr>";
+    echo "<td>$n</td>";
+    echo "<td>$dir</td>";
+    echo "<td>" . SourceCleanPath($dir) . "</td>";
+    echo "<td  style='text-align: center;'>$num_files</td>";
+    $tag = dechex($hsum);
+    $jsx = [];
+    $jsx[] = "onmouseenter=\"showHideDiv(event,$hdx)\"";
+    $jsx[] = "onmouseout=\"showHideDiv(event,$hdx)\"";
+    $js = join(';', $jsx);
+    echo "<td style='text-align: center;' $js><a href='#top'>$tag</a></td>";
+    echo "</tr>";
 
-        closedir($dh);
+    closedir($dh);
 
-        $GLOBALS['gMasterSum'] += $hsum;
-    }
+    $GLOBALS['gMasterSum'] += $hsum;
+    #   }
 
     if ($GLOBALS['gTrace'])
         array_pop($GLOBALS['gFunction']);

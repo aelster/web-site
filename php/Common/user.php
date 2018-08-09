@@ -1,6 +1,6 @@
 <?php
 
-include('password.php');
+require_once 'password.php';
 
 class User extends Password {
 
