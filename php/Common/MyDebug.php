@@ -214,7 +214,13 @@ function MyDebug() {
                 }
             }
         }
-        DoQuery( "update users set debug = $debug where userid = $gUserId" );
+        $GLOBALS['gDb'] = $GLOBALS['gDbVector'][0];  
+
+        $query = "update users set debug = :v1 where userid = :v2";        
+        DoQuery( $query, [':v1' => $debug, ':v2' => $gUserId ] );
+        
+        $GLOBALS['gDb'] = $GLOBALS['gDbVector'][$_SESSION['dbId']];
+
         $GLOBALS['gDebug'] = $debug;
     }
 }

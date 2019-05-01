@@ -8,15 +8,15 @@ class User extends Password {
 
     function __construct($db) {
         parent::__construct();
-
         $this->_db = $db;
     }
 
     private function get_user_hash($username) {
         try {
-            $stmt = DoQuery('SELECT * FROM users WHERE username = :username AND active=:active ',
-                    ['username' => $username, 'active' => 'YES'] );
+            $stmt = $this->_db->prepare('SELECT * FROM users WHERE username = :username AND active=:active');
+            $stmt->execute(['username' => $username, 'active' => 'YES']);
             return $stmt->fetch(PDO::FETCH_ASSOC);
+            
         } catch (PDOException $e) {
             echo '<p class="bg-danger">' . $e->getMessage() . '</p>';
         }
@@ -50,7 +50,8 @@ class User extends Password {
                 return false;
             } else {
                 $str = date('Y-m-d H:i:s');
-                DoQuery( 'update users set lastlogin = :ll where userid = :id', array( ':ll' => $str, ':id' => $row['userid']));
+                $stmt = $this->_db->prepare('update users set lastlogin = :ll where userid = :id');
+                $stmt->execute([':ll' => $str, ':id' => $row['userid']]);
                 
                 $_SESSION['loggedin'] = true;
                 return true;

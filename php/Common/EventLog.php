@@ -35,13 +35,19 @@ function EventLogDisplay() {
         $GLOBALS['gFunction'][] = __FUNCTION__;
         Logger();
     }
+
     $dates = [];
-    $stmt = DoQuery( "select * from event_log order by time asc");
+    $query = "select * from event_log order by time asc";
+    
+    $stmt = DoQuery( $query );
+
     while( $row = $stmt->fetch(PDO::FETCH_ASSOC)) {
         list($day, $time)=explode(' ', $row["time"]);
         $dates[$day][] = $row;
     }
     
+//    $GLOBALS['gDb'] = $GLOBALS['gDbVector'][$_SESSION['dbId']];
+  
     echo "<div class=center>";
     echo "<h2>Event Log</h2>";
     echo "<input type=submit name=action value=Back>";

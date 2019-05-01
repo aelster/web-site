@@ -285,7 +285,13 @@ function SourceDisplaySub($dir, &$hiddenDivs) {
             $type = 'local';
             $tmp = [0, 0, 0, 0, 0, 0, 0, 0];
         } else {
-            list( $name, $type ) = preg_split('/\./', $file);
+            $xx = preg_split('/\./', $file);
+            if( count($xx) > 1 ) {
+                list( $name, $type ) = $xx;
+            } else {
+                $name = $xx[0];
+                $type = 'other';
+            }
             $local = md5_file($ffile);
             $tmp = str_split($local, 4);
         }

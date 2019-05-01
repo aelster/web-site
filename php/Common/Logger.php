@@ -7,25 +7,24 @@ function Logger() {
     $gDebugWindow = $GLOBALS['gDebugWindow'];
     $gDebugHTML = $GLOBALS['gDebugHTML'];
 
-    if( $gDebug & $gDebugInLine ) {
-        echo "<div align=left>";
+    if ($gDebug & $gDebugInLine) {
         if (func_num_args() > 0) {
-            echo func_get_arg(0) . "<br>";
+            $str = func_get_arg(0);
         } else {
-            echo join('>', $GLOBALS['gFunction']) . "<br>";
+            $str = join('>', $GLOBALS['gFunction']);
         }
-        echo "</div>\n";
+        echo "<div align=left>$str<br></div>";
     }
-    
-    if( $gDebug & $gDebugErrorLog ) {
+
+    if ($gDebug & $gDebugErrorLog) {
         if (func_num_args() > 0) {
             error_log(func_get_arg(0));
         } else {
             error_log(join('>', $GLOBALS['gFunction']));
         }
     }
-    
-    if( $gDebug & $gDebugWindow ) {
+
+    if ($gDebug & $gDebugWindow) {
         if (func_num_args() > 0) {
             $str = func_get_arg(0);
         } else {
@@ -36,7 +35,7 @@ function Logger() {
         echo "</script>";
     }
 
-        if( $gDebug & $gDebugHTML ) {
+    if ($gDebug & $gDebugHTML) {
         if (func_num_args() > 0) {
             $str = func_get_arg(0);
         } else {
@@ -46,7 +45,6 @@ function Logger() {
         echo "$str\n";
         echo "-->\n";
     }
-
 }
 
 ?>

@@ -1,26 +1,13 @@
 <?php
-global $gAccessLevel;
-global $gAccessLevelEnabled;
-global $gAccessLevels;
-global $gAccessNameEnabled;
-global $gAccessNameToId;
-global $gAccessNameToLevel;
-global $gActive;
-global $gEnabled;
-global $gMessage1;
-global $gMessage2;
-global $gNameFirst;
-global $gNameLast;
-global $gPasswdChanged;
-global $gSupport;
-global $gUserId;
-global $gUserVerified;
-
 function UserManager() {
     if ($GLOBALS['gTrace']) {
         $GLOBALS['gFunction'][] = __FUNCTION__;
         Logger();
     }
+    
+    $save_db = $GLOBALS['gDb'];    
+    $GLOBALS['gDb'] = $GLOBALS['gDbControl'];
+    
     $area = func_get_arg(0);
 
     switch ($area) {
@@ -92,6 +79,8 @@ function UserManager() {
             echo "Uh-oh:  Contact Andy regarding UserManager( $area )<br>";
             break;
     }
+
+    $GLOBALS['gDb'] = $save_db;
 
     if ($GLOBALS['gTrace'])
         array_pop($GLOBALS['gFunction']);
@@ -448,9 +437,13 @@ function UserManagerForgot() {
             $subject = "Password Reset for " . $GLOBALS['gTitle'];
             $recipients[$row['email']] = $row['first'] . " " . $row['last'];
 
-            $body = "<p>Someone requested that the password be reset.</p>";
-            $body .= "<p>If this was a mistake, just ignore this email and nothing will happen.</p>";
-            $body .= "<p>To reset your password, visit the following address: <a href='" . $GLOBALS['gSourceCode'];
+            $body = sprintf("<img src=\"cid:sigimg\" width='%d' height='%d'/>",
+                    $GLOBALS['gMailSignatureImageSize']['width'],
+                    $GLOBALS['gMailSignatureImageSize']['height']);
+            $body .= "<p>A password reset request was made for an account with this email.";
+            $body .= " If this was a mistake just ignore this email and nothing will happen.</p>";
+            $body .= "<p>Username: " . $row['username'] . "</p>";
+            $body .= "<p>To reset your password click on the following link: <a href='" . $GLOBALS['gSourceCode'];
             $body .= "?action=Reset&key=$token'>" . $GLOBALS['gSourceCode'] . "</a></p>";
             $body .= "<br>" . join('<br>', $GLOBALS['gMailSignature']);
 
@@ -591,7 +584,7 @@ function UserManagerLoad($userid) {
     $GLOBALS['gUserName'] = $row['username'];
     $GLOBALS['gLastLogin'] = $row['lastlogin'];
     $GLOBALS['gActive'] = $row['active'];
-    $GLOBALS['gDebug'] = $row['debug'];
+    $GLOBALS['gDebug'] = $GLOBALS['gTrace'] = $row['debug'];
 
     $query = 'select privileges.level, privileges.enabled from privileges, access';
     $query .= ' where access.privid = privileges.id and access.userid = :uid';
@@ -1269,7 +1262,12 @@ function UserManagerReset() {
                         }
 
                         //check the action
-                        switch ($_GET['action']) {
+                        if( array_key_exists('action', $_POST ) ) {
+                            $val = $_POST['action'];
+                        } elseif(array_key_exists ('action', $_GET ) ) {
+                            $val = $_GET['action'];
+                        }
+                        switch ($val) {
                             case 'active':
                                 echo "<h2 class='bg-success'>Your account is now active you may now log in.</h2>";
                                 break;
@@ -1298,6 +1296,7 @@ function UserManagerReset() {
                                 <?php
                                 $acts = array();
                                 $acts[] = "setValue('area','Reset')";
+                                $acts[] = "setValue('func','verify')";
                                 $acts[] = "setValue('id', '" . $GLOBALS['gUserId'] . "')";
                                 $acts[] = "setValue('key', '" . $GLOBALS['gResetKey'] . "')";
                                 $acts[] = "addAction('Reset')";
