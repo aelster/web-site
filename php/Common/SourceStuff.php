@@ -161,18 +161,6 @@ function SourceDisplay() {
     foreach ($dirs as $path) {
         if ($path == ".")
             continue;
-        if (preg_match('/swift/i', $path))
-            continue;
-        if (preg_match('/fpdf/i', $path))
-            continue;
-        if (preg_match('/PHPMailer/i', $path))
-            continue;
-        if (preg_match('/usr\/lib/', $path))
-            continue;
-        if (preg_match('/usr\/local\/lib/', $path))
-            continue;
-        if (preg_match('/usr\/php/', $path))
-            continue;
         $tmp = DirTree($path, 0);
         sort($tmp);
         foreach ($tmp as $dir) {
@@ -261,45 +249,6 @@ function SourceDisplaySub($dir, &$hiddenDivs) {
         }
         if( $match ) continue;
         
-        /*        
-        if (preg_match("/^\./", $file))
-            continue;
-        if (preg_match("/\.dbg$/", $file))
-            continue;
-        if (preg_match("/\.log$/", $file))
-            continue;
-        if (preg_match("/\.ini$/", $file))
-            continue;
-        if (preg_match("/\.ignore$/", $file))
-            continue;
-        if (preg_match("/\.*z$/", $file))
-            continue;
-        if (preg_match("/kpf$/", $file))
-            continue;
-        if (preg_match("/ste$/", $file))
-            continue;
-        if (preg_match("/^_/", $file))
-            continue;
-        if (preg_match("/komodoproject$/", $file))
-            continue;
-        if (preg_match("/swp$/", $file))
-            continue;
-        if (preg_match("/svn-commit/", $file))
-            continue;
-        if (preg_match("/error_log/", $file))
-            continue;
-        if (preg_match("/favicon.png/", $file))
-            continue;
-        if (preg_match("/andyMyAdmin/", $file))
-            continue;
-        if (preg_match("/.sql$/", $file))
-            continue;
-        if (preg_match("/^.publish/", $file))
-            continue;
-        if (preg_match("/~$/", $file))
-            continue;
- * 
- */
         if (preg_match("/^local/", $file)) {
             $name = $file;
             $type = 'local';
