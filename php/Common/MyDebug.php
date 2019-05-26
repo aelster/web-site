@@ -20,7 +20,7 @@ function MyDebug() {
         
         echo "<input type=button value=Back onclick=\"setValue('from', 'MyDebug');addAction('Back');\">";
         
-        $tag = MakeTag('update');
+/*        $tag = MakeTag('update');
         $jsx = array();
         $jsx[] = "setValue('area','debug')";
         $jsx[] = "setValue('from','MyDebug')";
@@ -28,6 +28,7 @@ function MyDebug() {
         $jsx[] = "addAction('Update')";
         $js = sprintf("onClick=\"%s\"", join(';', $jsx));
         echo "<input type=button value=Update $tag $js>";
+*/
         echo "<br><br>";
         
         echo "</div>";
@@ -66,7 +67,10 @@ function MyDebug() {
         $jsx = array();
         $jsx[] = "setValue('from','MyDebug')";
         $jsx[] = "addField('$fld')";
-        $jsx[] = "toggleBgRed('update')";
+        $jsx[] = "setValue('area','debug')";
+        $jsx[] = "setValue('from','MyDebug')";
+        $jsx[] = "setValue('func','update')";
+        $jsx[] = "addAction('Update')";
         $js = sprintf("onChange=\"%s\"", join(';', $jsx));
         $tag = MakeTag("$fld");
         echo "<td>";
@@ -86,7 +90,10 @@ function MyDebug() {
         $jsx = array();
         $jsx[] = "setValue('from','MyDebug')";
         $jsx[] = "addField('$fld')";
-        $jsx[] = "toggleBgRed('update')";
+        $jsx[] = "setValue('area','debug')";
+        $jsx[] = "setValue('from','MyDebug')";
+        $jsx[] = "setValue('func','update')";
+        $jsx[] = "addAction('Update')";
         $js = sprintf("onChange=\"%s\"", join(';', $jsx));
         $tag = MakeTag("$fld");
         $enabled = ($gDebug & $gDebugInLine) ? 1 : 0;
@@ -114,7 +121,10 @@ function MyDebug() {
         $jsx = array();
         $jsx[] = "setValue('from','MyDebug')";
         $jsx[] = "addField('$fld')";
-        $jsx[] = "toggleBgRed('update')";
+        $jsx[] = "setValue('area','debug')";
+        $jsx[] = "setValue('from','MyDebug')";
+        $jsx[] = "setValue('func','update')";
+        $jsx[] = "addAction('Update')";
         $js = sprintf("onChange=\"%s\"", join(';', $jsx));
         $tag = MakeTag("$fld");
         
@@ -144,7 +154,10 @@ function MyDebug() {
         $jsx = array();
         $jsx[] = "setValue('from','MyDebug')";
         $jsx[] = "addField('$fld')";
-        $jsx[] = "toggleBgRed('update')";
+        $jsx[] = "setValue('area','debug')";
+        $jsx[] = "setValue('from','MyDebug')";
+        $jsx[] = "setValue('func','update')";
+        $jsx[] = "addAction('Update')";
         $js = sprintf("onChange=\"%s\"", join(';', $jsx));
         $tag = MakeTag("$fld");
         
@@ -173,7 +186,10 @@ function MyDebug() {
         $jsx = array();
         $jsx[] = "setValue('from','MyDebug')";
         $jsx[] = "addField('$fld')";
-        $jsx[] = "toggleBgRed('update')";
+        $jsx[] = "setValue('area','debug')";
+        $jsx[] = "setValue('from','MyDebug')";
+        $jsx[] = "setValue('func','update')";
+        $jsx[] = "addAction('Update')";
         $js = sprintf("onChange=\"%s\"", join(';', $jsx));
         $tag = MakeTag("$fld");
         

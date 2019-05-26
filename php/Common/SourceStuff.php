@@ -1,6 +1,8 @@
 <?php
 
 function DirTree($dir, $index_required) {
+    include 'SourceStuffIgnore.php';
+    
     $path = '';
     $stack[] = $dir;
     $dirs = array();
@@ -8,37 +10,39 @@ function DirTree($dir, $index_required) {
         $thisdir = array_pop($stack);
         if (!is_dir($thisdir))
             continue;
+
+        $match = 0;
+        foreach( $SourceStuff_DirsRegex as $regex ) {
+            if( preg_match($regex, $thisdir ) ) {
+                $match = 1;
+                break;
+            }
+        }
+        if( $match ) continue;
+                
         $tmp = scandir($thisdir);
-        if ($index_required) {
+
+        if ($index_required) { 
             if (preg_grep('/index.htm/', $tmp) || preg_grep('/index.php/', $tmp)) {
                 $dirs[] = $thisdir;
             }
         } else {
             $dirs[] = $thisdir;
         }
+
         foreach ($tmp as $file) {
             if ($file == "." || $file == "..")
                 continue;
-            if (preg_match('/^\./', $file))
-                continue;
-            if (preg_match('/^_/', $file))
-                continue;
-            if (preg_match('/^phpMyAdmin/', $file))
-                continue;
-            if (preg_match('/^andyMyAdmin/', $file))
-                continue;
-            if (preg_match('/^phpmanual/', $file))
-                continue;
-            if (preg_match('/images/', $file))
-                continue;
-            if (preg_match('/^wp-/i', $file))
-                continue;
-            if (preg_match('/^fpdf/', $file))
-                continue;
-            if (preg_match('/Swift/', $file))
-                continue;
-            if (preg_match('/nbproject/', $file))
-                continue;
+            
+            $match = 0;
+            foreach( $SourceStuff_FilesRegex as $regex ) {
+                if( preg_match($regex, $file ) ) {
+                    $match = 1;
+                    Logger( "    Match = 1" );
+                    break;
+                }
+            }
+            if( $match ) continue;
 
             $t = $thisdir . DIRECTORY_SEPARATOR . $file;
             if (preg_match('/site$/', $file))
@@ -206,6 +210,8 @@ function SourceDisplay() {
 }
 
 function SourceDisplaySub($dir, &$hiddenDivs) {
+    include 'SourceStuffIgnore.php';
+    
     if ($GLOBALS['gTrace']) {
         $GLOBALS['gFunction'][] = __FUNCTION__;
         Logger();
@@ -244,6 +250,18 @@ function SourceDisplaySub($dir, &$hiddenDivs) {
         $ffile = $dir . DIRECTORY_SEPARATOR . $file;
         if (!is_file($ffile))
             continue;
+
+        $match = 0;
+        foreach( $SourceStuff_FilesRegex as $regex ) {
+            if( preg_match($regex, $file ) ) {
+                $match = 1;
+                Logger( "    Match = 1" );
+                break;
+            }
+        }
+        if( $match ) continue;
+        
+        /*        
         if (preg_match("/^\./", $file))
             continue;
         if (preg_match("/\.dbg$/", $file))
@@ -280,6 +298,8 @@ function SourceDisplaySub($dir, &$hiddenDivs) {
             continue;
         if (preg_match("/~$/", $file))
             continue;
+ * 
+ */
         if (preg_match("/^local/", $file)) {
             $name = $file;
             $type = 'local';
