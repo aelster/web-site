@@ -8,11 +8,11 @@ function DoQuery($query) {
     $db = $GLOBALS['gDb'];
     
     try {
-        if ($query == 'start transaction') {
+        if (preg_match("/start transaction/i", $query )) {
             $db->beginTransaction();
-        } elseif ($query == 'commit') {
+        } elseif (preg_match("/commit/i", $query )) {
             $db->commit();
-        } elseif ($query == 'rollback') {
+        } elseif (preg_match("/rollback/i", $query )) {
             $db->rollBack();
         } else {
             $stmt = $db->prepare($query);
