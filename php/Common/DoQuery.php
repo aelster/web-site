@@ -37,15 +37,16 @@ function DoQuery($query) {
 
     $force = 0;
     if ($force || $debug ) {
-        $dmsg = "DoQuery: [$query]" . sprintf(", # rows: %d", $num);
+        $tmp = [];
+        $tmp[] = "DoQuery: [$query]" . sprintf(", # rows: %d", $num);
 
-        Logger($dmsg);
         if (!empty($args)) {
             $i = 0;
             foreach ($args as $key => $val) {
-                Logger(sprintf("arg %d: %s => %s", $i++, $key, $val));
+                $tmp[] = sprintf("arg %d: %s => %s", $i++, $key, $val);
             }
         }
+        Logger($tmp);
     }
     return $stmt;
 }
