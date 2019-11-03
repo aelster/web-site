@@ -5,29 +5,31 @@ function DumpPostVars() {
         $GLOBALS['gFunction'][] = __FUNCTION__;
         Logger();
     }
-    Logger("<div align=left target=dbg style=\"background-color: lightgrey;\">");
+    $saved = [];
+    $saved[] = "<div align=left target=dbg class=dpv>";
 
     if (func_num_args() > 0) {
-        Logger(func_get_arg(0));
+        $saved[] = func_get_arg(0);
     }
 
     $dump_server = 0;
+    $saved[] = sprintf("# post variables: %d", count(array_keys($_POST)));
 
     ksort($_POST);
     $i = 0;
     foreach ($_POST as $var => $val) {
         if ($i++ == 0) {
-            Logger("---------------------------------------");
+            $saved[] = "---------------------------------------";
         }
         if (preg_match("/userpass/i", $var) || preg_match("/password/i", $var)) {
-            Logger(sprintf("dpv:  %-20s: %s, length: %d", $var, "******", strlen($val)));
+            $saved[] = sprintf("dpv:  %-20s: %s, length: %d", $var, "******", strlen($val));
         } else {
             if (is_array($val)) {
                 foreach ($val as $k => $v) {
-                    Logger(sprintf("dpav:  %-20s[%s]: %s", $var, $k, $v));
+                    $saved[] = sprintf("dpav:  %-20s[%s]: %s", $var, $k, $v);
                 }
             } else {
-                Logger(sprintf("dpv:  %-20s: %s", $var, $val));
+                $saved[] = sprintf("dpv:  %-20s: %s", $var, $val);
             }
         }
     }
@@ -35,13 +37,13 @@ function DumpPostVars() {
     $i = 0;
     if ($dump_server > 0) {
         if ($i++ == 0) {
-            Logger("---------------------------------------");
+            $saved[] = "---------------------------------------";
         }
         foreach ($gServer as $var => $val) {
             if ($var != "passwd") {
-                Logger(sprintf("dsv:  %-20s: %s", $var, $val));
+                $saved[] = sprintf("dsv:  %-20s: %s", $var, $val);
             } else {
-                Logger(sprintf("dsv:  %-20s: %s", $var, "******"));
+                $saved[] = sprintf("dsv:  %-20s: %s", $var, "******");
             }
         }
     }
@@ -50,20 +52,22 @@ function DumpPostVars() {
     if (isset($_SESSION)) {
         foreach ($_SESSION as $var => $val) {
             if ($i++ == 0) {
-                Logger("---------------------------------------");
+                $saved[] = "---------------------------------------";
             }
             if( is_object($val) ) {
-                Logger(sprintf("sess:  %-20s: %s", $var, "object"));
+                $saved[] = sprintf("sess:  %-20s: %s", $var, "object");
             } elseif( is_array($val) ) {
-                Logger(sprintf("sess:  %-20s: %s", $var, "array"));
+                $saved[] = sprintf("sess:  %-20s: %s", $var, "array");
             } elseif ($var != "passwd") {
-                Logger(sprintf("sess:  %-20s: %s", $var, $val));
+                $saved[] = sprintf("sess:  %-20s: %s", $var, $val);
             } else {
-                Logger(sprintf("sess:  %-20s: %s", $var, "******"));
+                $saved[] = sprintf("sess:  %-20s: %s", $var, "******");
             }
         }
     }
-    Logger("</div>");
+    $saved[] = "</div>";
+    Logger($saved );
+    
     if ($GLOBALS['gTrace']) {
         array_pop($GLOBALS['gFunction']);
     }
