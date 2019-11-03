@@ -35,6 +35,7 @@ function EventLogDisplay() {
         $GLOBALS['gFunction'][] = __FUNCTION__;
         Logger();
     }
+    $gDreamweaver = array_key_exists('gDreamweaver',$GLOBALS) ? $GLOBALS['gDreamweaver'] : 0;
 
     $dates = [];
     $query = "select * from event_log order by time asc";
@@ -51,13 +52,13 @@ function EventLogDisplay() {
     echo "<div class=center>";
     echo "<h2>Event Log</h2>";
     echo "<input type=submit name=action value=Back>";
-
-    $acts = array();
-    $acts[] = "setValue('from','" . __FUNCTION__ . "')";
-    $acts[] = "setValue('func','init')";
-    $acts[] = "myConfirm('Are you sure you want to initialize the Event Log?')";
-    echo sprintf("<input type=button onClick=\"%s\" id=update value=\"Initialize\">", join(';', $acts));
-
+    if (!$gDreamweaver) {
+        $acts = array();
+        $acts[] = "setValue('from','" . __FUNCTION__ . "')";
+        $acts[] = "setValue('func','init')";
+        $acts[] = "myConfirm('Are you sure you want to initialize the Event Log?')";
+        echo sprintf("<input type=button onClick=\"%s\" id=update value=\"Initialize\">", join(';', $acts));
+    }
     echo "</div>";
 
     $tmp = array_reverse( array_keys( $dates ) );
@@ -111,7 +112,24 @@ function EventLogDisplay() {
     }
     echo "</tbody>";
     echo "</table>";
-        
+    $acts = array();
+    $acts[] = "setValue('from','" . __FUNCTION__ . "')";
+    $acts[] = "setValue('func','init')";
+    $acts[] = "myConfirm('Are you sure you want to initialize the Event Log?')";
+    $js = join(';',$acts);
+
+    if( $gDreamweaver ) {
+?>
+<script type="text/javascript">
+    var btn = document.createElement('button');
+    btn.setAttribute('class','sidebar-btn');
+    btn.innerText = 'Initialize?';
+    btn.onClick = "<?php echo $js ?>";
+    document.getElementById("sidebar").appendChild(btn);
+</script>
+<?php
+    }
+
     if ($GLOBALS['gTrace'])
         array_pop($GLOBALS['gFunction']);    
 }
