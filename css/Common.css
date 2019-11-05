@@ -44,33 +44,33 @@ td {
 }
 
 .control {
-    background-color: #FF3399;
-    padding: 10px 20px 20px 20px;
+    background-color: #fce;
+    text-align: center;
 }
 
 .admin {
-    background-color: #0099FF;
-    padding: 10px 20px 20px 20px;
+    background-color: #cef;
+    text-align: center;
 }
 
 .accounting {
-    background-color: #90ee90;
-    padding: 10px 20px 20px 20px;
+    background-color: #ffc;
+    text-align: center;
 }
 
 .secretary {
     background-color: #ff9966;
-    padding: 10px 20px 20px 20px;
+    text-align: center;
 }
 
 .teacher {
     background-color: #FFD700;
-    padding: 10px 20px 20px 20px;
+    text-align: center;
 }
 
 .office {
-    background-color: #FFD700;
-    padding: 10px 20px 20px 20px;
+    background-color: #ffc;
+    text-align: center;
 }
 
 .hidden {

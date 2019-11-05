@@ -4,22 +4,18 @@ var minusImg = new Image();
 minusImg.src = "/images/minus.gif";
 var debug_disabled = 1;
 
-function _init()
-{
+function _init(){
     createDebugWindow();
     debug('_init');
     hideAll();
 }
-
-function addAction(cmd)
-{
+function addAction(cmd) {
     var e = document.getElementById('action');
     if (!e)
         alert("can't find element[ action ]");
     e.value = cmd;
     document.fMain.submit();
 }
-
 function addField(id) {
     var e = document.getElementById('fields');
     if (!e)
@@ -30,7 +26,34 @@ function addField(id) {
         e.value += ',' + id;
     }
 }
+function addValue(id, val) {
+    e = document.getElementById(id);
+    if (!e)
+        alert("Can't find id " + id);
+    if (!e.value) {
+        e.value = val;
+    } else {
+        e.value += ',' + val;
+    }
+}
+function checkEnter(e) { //e is event object passed from function invocation
+    var characterCode; //literal character code will be stored in this variable
 
+    if (e && e.which) { //if which property of event object is supported (NN4)
+        e = e;
+        characterCode = e.which; //character code is contained in NN4's which property
+    } else {
+        e = event;
+        characterCode = e.keyCode; //character code is contained in IE's keyCode property
+    }
+
+    if (characterCode == 13) { //if generated character code is equal to ascii 13 (if enter key)
+        document.fMain.action.submit(); //submit the form
+        return false;
+    } else {
+        return true;
+    }
+}
 function clearDebugWindow() {
     if (debug_disabled) {
         return;
@@ -40,7 +63,6 @@ function clearDebugWindow() {
         createDebugWindow();
     }
 }
-
 function closeDebugWindow() {
     if (debug_disabled) {
         return;
@@ -49,7 +71,6 @@ function closeDebugWindow() {
         window.top.debugWindow.close();
     }
 }
-
 function createDebugWindow() {
     if (debug_disabled) {
         return;
@@ -70,26 +91,6 @@ function createDebugWindow() {
     window.top.debugWindow.document.write(
             "<HTML><HEAD><TITLE>Debug Window</TITLE></HEAD><BODY><PRE>\n");
 }
-
-function DumpHtml()
-{
-    var d = document;
-
-    debug('------------------------------');
-    debug('# forms: ' + d.forms.length);
-    for (i = 0; i < d.forms.length; i++)
-    {
-        var f = d.forms[i];
-        debug('form[' + i + '].name=' + f.name);
-        debug('form[' + i + '].length = ' + f.length);
-        for (j = 0; j < f.length; j++)
-        {
-            var e = f.elements[j];
-            debug('element[' + j + '].name=' + e.name + ' (' + e.value + ')');
-        }
-    }
-}
-
 function debug(text) {
     var str;
     if (window.top.debugWindow && !window.top.debugWindow.closed) {
@@ -102,123 +103,6 @@ function debug(text) {
         window.top.debugWindow.document.write(str + "\n");
     }
 }
-
-function download_file(file)
-{
-    var spl = file.split('\\');
-    for (var i = 0; i < spl.length; i++) {
-        debug('spl[' + i + ']=' + spl[i]);
-    }
-    debug('file:' + file);
-    document.getElementById('file').value = file;
-    document.getElementById('action').value = "View";
-    document.getElementById('fMain').submit();
-}
-
-function getPassword(e)
-{
-    var keynum, keychar, numcheck;
-    if (window.event) // IE
-    {
-        keynum = e.keyCode;
-    } else if (e.which) // Netscape/Firefox/Opera
-    {
-        keynum = e.which;
-    }
-    if (keynum == 13)
-    {
-        var f = document.getElementById('userpass');
-        f.focus();
-    }
-}
-
-function hideDebug() {
-    if (window.top.debugWindow && !window.top.debugWindow.closed) {
-        window.top.debugWindow.close();
-        window.top.debugWindow = null;
-    }
-}
-
-function keyDown(e)
-{
-    var keynum, keychar, numcheck;
-    if (window.event) // IE
-    {
-        keynum = e.keyCode;
-    } else if (e.which) // Netscape/Firefox/Opera
-    {
-        keynum = e.which;
-    }
-    if (keynum == 13)
-    {
-        doChallengeResponse();
-    }
-}
-
-function setFocus(id)
-{
-    var e = document.getElementById(id);
-    if (!e)
-        alert("Can't find id " + id);
-    e.focus();
-}
-
-function setHtml(id, val)
-{
-    e = document.getElementById(id);
-    if (!e)
-        alert("Can't find id " + id);
-    e.innerHTML = val;
-}
-
-function setValue(id, val)
-{
-    e = document.getElementById(id);
-    if (!e)
-        alert("Can't find id " + id);
-    e.value = val;
-}
-
-function showHideDiv(e, divx) {
-    var d = document.getElementById('hidden' + divx);
-    if ( !d.style.display || d.style.display === 'none') {
-        var e = document.getElementsByClassName('hidden');
-        for (i = 0; i < e.length; i++) {
-            e[i].style.display = "none";
-        }
-        d.style.position = "absolute";
-        d.style.left = 0 + 'px';
-        d.style.top = ( 20 ) + 'px';
-        d.style.display = "block";
-
-    } else {
-        d.style.display = "none";
-    }
-}
-
-function toggleBgRed(id) {
-    var e = document.getElementById(id);
-    if (!e)
-        alert("Can't find id: " + id);
-    if (e.style.backgroundColor == '#ff0000') {
-        e.style.backgroundColor = '#ffffff';
-    } else {
-        e.style.backgroundColor = '#ff0000';
-    }
-}
-
-function toggleDebug() {
-    if (document.getElementById("debugOn").checked) {
-        showDebug();
-        debug("Check box checked, switched on debug");
-        document.getElementById("checkboxLabel").innerHTML = "The debug window is <b>on</b>";
-    } else {
-        debug("Check box unchecked, switching off debug");
-        hideDebug();
-        document.getElementById("checkboxLabel").innerHTML = "The debug window is <b>off</b>";
-    }
-}
-
 function doChallengeResponse() {
     var up = document.getElementById("userpass");
     if (up.value.length == 64) {
@@ -235,44 +119,81 @@ function doChallengeResponse() {
     addAction('Login');
     return false;
 }
+function download_file(file) {
+    var spl = file.split('\\');
+    for (var i = 0; i < spl.length; i++) {
+        debug('spl[' + i + ']=' + spl[i]);
+    }
+    debug('file:' + file);
+    document.getElementById('file').value = file;
+    document.getElementById('action').value = "View";
+    document.getElementById('fMain').submit();
+}
+function DumpHtml() {
+    var d = document;
 
-function verifypwd()
-{
-    var p1 = document.getElementById("newpassword1");
-    var p2 = document.getElementById("newpassword2");
-    var btn = document.getElementById("userSettingsUpdate");
-    var txt = document.getElementById("pwdval");
-    if (p1.value != p2.value) {
-        btn.disabled = true;
-        btn.style.backgroundColor = '#ff0000';
-        if (txt)
-            txt.innerHTML = "** Passwords Don't Match **";
-    } else {
-        btn.disabled = false;
-        btn.style.backgroundColor = '#90EE90';
-        if (txt)
-            txt.innerHTML = "";
+    debug('------------------------------');
+    debug('# forms: ' + d.forms.length);
+    for (i = 0; i < d.forms.length; i++)
+    {
+        var f = d.forms[i];
+        debug('form[' + i + '].name=' + f.name);
+        debug('form[' + i + '].length = ' + f.length);
+        for (j = 0; j < f.length; j++)
+        {
+            var e = f.elements[j];
+            debug('element[' + j + '].name=' + e.name + ' (' + e.value + ')');
+        }
     }
 }
-
-function mungepwd()
-{
+function getPassword(e) {
+    var keynum, keychar, numcheck;
+    if (window.event) // IE
+    {
+        keynum = e.keyCode;
+    } else if (e.which) // Netscape/Firefox/Opera
+    {
+        keynum = e.which;
+    }
+    if (keynum == 13)
+    {
+        var f = document.getElementById('userpass');
+        f.focus();
+    }
+}
+function hideDebug() {
+    if (window.top.debugWindow && !window.top.debugWindow.closed) {
+        window.top.debugWindow.close();
+        window.top.debugWindow = null;
+    }
+}
+function keyDown(e) {
+    var keynum, keychar, numcheck;
+    if (window.event) // IE
+    {
+        keynum = e.keyCode;
+    } else if (e.which) // Netscape/Firefox/Opera
+    {
+        keynum = e.which;
+    }
+    if (keynum == 13)
+    {
+        doChallengeResponse();
+    }
+}
+function mungepwd() {
     var p1 = document.getElementById("newpassword1");
     var p2 = document.getElementById("newpassword2");
     p1.value = sha256_digest(p1.value);
     p2.value = "";
 }
-
-function myConfirm(prompt)
-{
+function myConfirm(prompt) {
     var response = confirm(prompt);
     if (response) {
         addAction('Update');
     }
 }
-
-function pwdGen()
-{
+function pwdGen() {
     var x = new Number;
     var p1 = document.getElementById("newpwd");
     var p2 = document.getElementById("newpwdh");
@@ -282,55 +203,92 @@ function pwdGen()
     }
     p2.value = sha256_digest(x.toString());
 }
-
-function checkEnter(e) { //e is event object passed from function invocation
-    var characterCode; //literal character code will be stored in this variable
-
-    if (e && e.which) { //if which property of event object is supported (NN4)
-        e = e;
-        characterCode = e.which; //character code is contained in NN4's which property
-    } else {
-        e = event;
-        characterCode = e.keyCode; //character code is contained in IE's keyCode property
-    }
-
-    if (characterCode == 13) { //if generated character code is equal to ascii 13 (if enter key)
-        document.fMain.action.submit(); //submit the form
-        return false;
-    } else {
-        return true;
-    }
-}
-
 function scrollableTable() {
     var done = 0;
     var col_idx = 1;
     var table_width = 0;
     var v, max_width, skip;
-    while( ! done ) {
-        v = document.getElementsByClassName('col' + col_idx );
-        if( v.length == 0 ) {
+    while (!done) {
+        v = document.getElementsByClassName('col' + col_idx);
+        if (v.length == 0) {
             done = 1;
             continue;
         }
         max_width = 0;
-        for( i = 0; i < v.length; i++ ) {
-            if( v[i].clientWidth > max_width ) {
+        for (i = 0; i < v.length; i++) {
+            if (v[i].clientWidth > max_width) {
                 max_width = v[i].clientWidth;
             }
         }
-	table_width += max_width;
+        table_width += max_width;
         skip = 0;
-        for( i = 0; i < v.length; i++ ) {
+        for (i = 0; i < v.length; i++) {
             v[i].style.width = max_width + 'px';
-            if( v[i].localName == 'th' ) skip++;
-            if( v[i].localName == 'td' ) skip++;
-            if( skip >= 2 ) break;
+            if (v[i].localName == 'th')
+                skip++;
+            if (v[i].localName == 'td')
+                skip++;
+            if (skip >= 2)
+                break;
         }
         col_idx++;
     }
 }
+function setFocus(id) {
+    var e = document.getElementById(id);
+    if (!e)
+        alert("Can't find id " + id);
+    e.focus();
+}
+function setHtml(id, val) {
+    e = document.getElementById(id);
+    if (!e)
+        alert("Can't find id " + id);
+    e.innerHTML = val;
+}
+function setValue(id, val) {
+    e = document.getElementById(id);
+    if (!e)
+        alert("Can't find id " + id);
+    e.value = val;
+}
+function showHideDiv(e, divx) {
+    var d = document.getElementById('hidden' + divx);
+    if (!d.style.display || d.style.display === 'none') {
+        var e = document.getElementsByClassName('hidden');
+        for (i = 0; i < e.length; i++) {
+            e[i].style.display = "none";
+        }
+        d.style.position = "absolute";
+        d.style.left = 0 + 'px';
+        d.style.top = (20) + 'px';
+        d.style.display = "block";
 
+    } else {
+        d.style.display = "none";
+    }
+}
+function toggleBgRed(id) {
+    var e = document.getElementById(id);
+    if (!e)
+        alert("Can't find id: " + id);
+    if (e.style.backgroundColor == '#ff0000') {
+        e.style.backgroundColor = '#ffffff';
+    } else {
+        e.style.backgroundColor = '#ff0000';
+    }
+}
+function toggleDebug() {
+    if (document.getElementById("debugOn").checked) {
+        showDebug();
+        debug("Check box checked, switched on debug");
+        document.getElementById("checkboxLabel").innerHTML = "The debug window is <b>on</b>";
+    } else {
+        debug("Check box unchecked, switching off debug");
+        hideDebug();
+        document.getElementById("checkboxLabel").innerHTML = "The debug window is <b>off</b>";
+    }
+}
 function toggleDetail(_tag) {
     var e, i;
     debug('toggleDetail(', _tag, ')');
@@ -352,9 +310,7 @@ function toggleDetail(_tag) {
         }
     }
 }
-
-function toggleEmail()
-{
+function toggleEmail() {
     var e, f, i, new_state, str, id;
     if (arguments.length > 0)
     {
@@ -393,9 +349,7 @@ function toggleEmail()
     var e = document.getElementById('addr_list');
     e.value = addrs.join();
 }
-
-function toggleLevel(_levelId, _imgId)
-{
+function toggleLevel(_levelId, _imgId) {
     var thisLevel = document.getElementById(_levelId);
     var thisImg = document.getElementById(_imgId);
     if (thisLevel.style.display == "none") {
@@ -411,9 +365,7 @@ function toggleLevel(_levelId, _imgId)
 //		debug( 'toggleLevel(' + _levelId + '):  display: block -> none' );
     }
 }
-
-function toggleVisOffOn(id1, id2)
-{
+function toggleVisOffOn(id1, id2) {
     var e = document.getElementById(id1);
     if (!e)
         alert("can't find id: " + id1);
@@ -423,4 +375,31 @@ function toggleVisOffOn(id1, id2)
     if (!e)
         alert("can't find id: " + id2);
     e.style.display = 'block';
+}
+function updateFormField(id,val) {
+    var e = document.getElementById(id);
+    if (!e)
+        alert("Can't find FormField: [" + id + "]");
+    if (!e.value) {
+        e.value = val;
+    } else {
+        e.value += ',' + val;
+    }
+}
+function verifypwd() {
+    var p1 = document.getElementById("newpassword1");
+    var p2 = document.getElementById("newpassword2");
+    var btn = document.getElementById("userSettingsUpdate");
+    var txt = document.getElementById("pwdval");
+    if (p1.value != p2.value) {
+        btn.disabled = true;
+        btn.style.backgroundColor = '#ff0000';
+        if (txt)
+            txt.innerHTML = "** Passwords Don't Match **";
+    } else {
+        btn.disabled = false;
+        btn.style.backgroundColor = '#90EE90';
+        if (txt)
+            txt.innerHTML = "";
+    }
 }

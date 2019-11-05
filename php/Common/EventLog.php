@@ -47,7 +47,7 @@ function EventLogDisplay() {
         $dates[$day][] = $row;
     }
     
-//    $GLOBALS['gDb'] = $GLOBALS['gDbVector'][$_SESSION['dbId']];
+//    $GLOBALS['gDb'] = $GLOBALS['gDatabases'][$_SESSION['dbId']];
   
     echo "<div class=center>";
     echo "<h2>Event Log</h2>";

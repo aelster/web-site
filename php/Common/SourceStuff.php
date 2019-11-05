@@ -108,23 +108,20 @@ function SourceDisplay() {
         $GLOBALS['gFunction'][] = __FUNCTION__;
         Logger();
     }
+    $gDreamweaver = array_key_exists('gDreamweaver',$GLOBALS) ? $GLOBALS['gDreamweaver'] : 0;
+
     global $n, $tot_files, $already_scanned, $web_base, $local_base;
 
     echo "<div class=center>";
-
+    
     $web_base = "";
     $GLOBALS['gMasterSum'] = 0;
 
-    $func = $_POST['func'];
-    echo "<input type=button value=Back onclick=\"setValue('from', '$func');addAction('Back');\">";
-
-    $acts = array();
-    $acts[] = "setValue('area','display')";
-    $acts[] = "setValue('func','source')";
-    $acts[] = "addAction('Main')";
-    echo sprintf("<input type=button onClick=\"%s\" value=Refresh>", join(';', $acts));
-
-
+    if( ! $gDreamweaver ) {
+        $func = $_POST['func'];
+        echo "<input type=button value=Back onclick=\"setValue('from', '$func');addAction('Back');\">";
+    }
+    
     $gMasterSum = 0;
     echo "<h2>Combined checksum:  <span id=master_sum></span></h2>";
 

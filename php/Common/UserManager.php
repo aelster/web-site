@@ -1,13 +1,14 @@
 <?php
+
 function UserManager() {
     if ($GLOBALS['gTrace']) {
         $GLOBALS['gFunction'][] = __FUNCTION__;
         Logger();
     }
-    
-    $save_db = $GLOBALS['gDb'];    
-    $GLOBALS['gDb'] = $GLOBALS['gDbControl'];
-    
+
+    $save_db = $GLOBALS['gDb'];
+    $GLOBALS['gDb'] = $GLOBALS['gDatabases'][$GLOBALS['gDbControlId']];
+
     $area = func_get_arg(0);
 
     switch ($area) {
@@ -231,30 +232,34 @@ function UserManagerDisplay() {
         $GLOBALS['gFunction'][] = __FUNCTION__;
         Logger();
     }
+    $dreamweaver = array_key_exists('gDreamweaver', $GLOBALS) ? $GLOBALS['gDreamweaver'] : 0;
     echo "<div class=center>";
+    if (!$dreamweaver) {
+        echo "<div class=center>";
 
-    echo "<h2>User Control</h2>";
-    echo "<input type=hidden name=from value=Users>";
-    echo sprintf("<input type=hidden name=userid value='%d'>", $GLOBALS['gUserId']);
+        echo "<h2>User Control</h2>";
+        echo "<input type=hidden name=from value=Users>";
+        echo sprintf("<input type=hidden name=userid value='%d'>", $GLOBALS['gUserId']);
 
-    $acts = [
-        "addAction('Back')"
-    ];
-    echo sprintf("<input type=button onClick=\"%s\" value=Back>", join(';', $acts));
+        $acts = [
+            "addAction('Back')"
+        ];
+        echo sprintf("<input type=button onClick=\"%s\" value=Back>", join(';', $acts));
 
-    $acts = [
-        "setValue('area','update')",
-        "setValue('id', '" . $GLOBALS['gUserId'] . "')",
-        "addAction('Update')"
-    ];
-    echo sprintf("<input type=button onClick=\"%s\" id=update value=Update>", join(';', $acts));
+        $acts = [
+            "setValue('area','update')",
+            "setValue('id', '" . $GLOBALS['gUserId'] . "')",
+            "addAction('Update')"
+        ];
+        echo sprintf("<input type=button onClick=\"%s\" id=update value=Update>", join(';', $acts));
+    }
 
     $acts = [
         "setValue('area','display')",
         "addAction('New')"
     ];
     echo sprintf("<input type=button onClick=\"%s\" value='New User'>", join(';', $acts));
-    echo "<br><br>";
+    echo "<br>";
     echo "</div>";
 
     $vprivs = array();
@@ -270,11 +275,15 @@ function UserManagerDisplay() {
             continue;
 
         $i = 0;
+        $divOpened = 0;
 
         $query = "select * from users, access where";
         $query .= " users.userid = access.userid and access.privid = :pid order by users.username ASC";
         $stmt = DoQuery($query, array(':pid' => $level));
         if ($stmt->rowCount() > 0) {
+            $divOpened = 1;
+
+            echo "<br>";
             echo "<div class=$name>";
             echo "<h3>$name</h3>";
 
@@ -346,9 +355,10 @@ function UserManagerDisplay() {
         }
         echo "</tbody>";
         echo "</table>";
-        echo "</div>";
+        if ($divOpened) {
+            echo "</div>";
+        }
     }
-    echo "</div>";
     if ($GLOBALS['gTrace'])
         array_pop($GLOBALS['gFunction']);
 }
@@ -437,9 +447,7 @@ function UserManagerForgot() {
             $subject = "Password Reset for " . $GLOBALS['gTitle'];
             $recipients[$row['email']] = $row['first'] . " " . $row['last'];
 
-            $body = sprintf("<img src=\"cid:sigimg\" width='%d' height='%d'/>",
-                    $GLOBALS['gMailSignatureImageSize']['width'],
-                    $GLOBALS['gMailSignatureImageSize']['height']);
+            $body = sprintf("<img src=\"cid:sigimg\" width='%d' height='%d'/>", $GLOBALS['gMailSignatureImageSize']['width'], $GLOBALS['gMailSignatureImageSize']['height']);
             $body .= "<p>A password reset request was made for an account with this email.";
             $body .= " If this was a mistake just ignore this email and nothing will happen.</p>";
             $body .= "<p>Username: " . $row['username'] . "</p>";
@@ -585,6 +593,7 @@ function UserManagerLoad($userid) {
     $GLOBALS['gLastLogin'] = $row['lastlogin'];
     $GLOBALS['gActive'] = $row['active'];
     $GLOBALS['gDebug'] = $GLOBALS['gTrace'] = $row['debug'];
+    error_log("xxx: gDebug = " . $row['debug'] . " xxx");
 
     $query = 'select privileges.level, privileges.enabled from privileges, access';
     $query .= ' where access.privid = privileges.id and access.userid = :uid';
@@ -649,13 +658,13 @@ function UserManagerLogin() {
             <div class="form-group">
                 <input type="text" name="username" id="username" class="form-control input-lg" placeholder="User Name" 
                        value="<?php
-                       if (isset($gError)) {
-                           echo htmlspecialchars($_POST['username'], ENT_QUOTES);
-                       }
-                       $jsx = array();
-                       $jsx[] = "addAction('Login')";
-                       $js = sprintf("onClick=\"%s\"", join(';', $jsx));
-                       ?>" tabindex="1">
+            if (isset($gError)) {
+                echo htmlspecialchars($_POST['username'], ENT_QUOTES);
+            }
+            $jsx = array();
+            $jsx[] = "addAction('verify')";
+            $js = sprintf("onClick=\"%s\"", join(';', $jsx));
+                ?>" tabindex="1">
             </div>
 
             <div class="form-group">
@@ -683,7 +692,7 @@ function UserManagerNew() {
         $GLOBALS['gFunction'][] = __FUNCTION__;
         Logger();
     }
-        global $gMailAdmin, $gMailAdminName, $gMailLive;
+    global $gMailAdmin, $gMailAdminName, $gMailLive;
 
     $user = $GLOBALS['user'];
     $area = filter_input(INPUT_POST, 'area');
@@ -819,7 +828,7 @@ function UserManagerNew() {
             }
 
             //redirect to index page
-            $GLOBALS['gAction'] = 'Main';
+            $GLOBALS['gAction'] = 'start';
             $GLOBALS['gFunc'] = 'users';
             $action = 'joined';
         }
@@ -858,28 +867,28 @@ function UserManagerNew() {
 
                         <div class="form-group">
                             <input type="text" name="username" id="username" class="form-control input-lg" placeholder="User Name" value="<?php
-                            if (isset($error)) {
-                                echo htmlspecialchars($_POST['username'], ENT_QUOTES);
-                            }
-                            ?>" tabindex="1">
+                if (isset($error)) {
+                    echo htmlspecialchars($_POST['username'], ENT_QUOTES);
+                }
+                        ?>" tabindex="1">
                         </div>
                         <div class="row">
                             <div class="col-xs-6 col-sm-6 col-md-6">
                                 <div class="form-group">
                                     <input type="text" name="firstName" id="firstName" class="form-control input-lg" placeholder="First Name" value="<?php
-                                    if (isset($error)) {
-                                        echo htmlspecialchars($_POST['firstName'], ENT_QUOTES);
-                                    }
-                                    ?>" tabindex="2">
+                    if (isset($error)) {
+                        echo htmlspecialchars($_POST['firstName'], ENT_QUOTES);
+                    }
+                        ?>" tabindex="2">
                                 </div>
                             </div>
                             <div class="col-xs-6 col-sm-6 col-md-6">
                                 <div class="form-group">
                                     <input type="text" name="lastName" id="lastName" class="form-control input-lg" placeholder="Last Name" value="<?php
-                                    if (isset($error)) {
-                                        echo htmlspecialchars($_POST['lastName'], ENT_QUOTES);
-                                    }
-                                    ?>" tabindex="3">
+                            if (isset($error)) {
+                                echo htmlspecialchars($_POST['lastName'], ENT_QUOTES);
+                            }
+                        ?>" tabindex="3">
                                 </div>
                             </div>
                         </div>
@@ -889,7 +898,7 @@ function UserManagerNew() {
                             if (isset($error)) {
                                 echo htmlspecialchars($_POST['email'], ENT_QUOTES);
                             }
-                            ?>" tabindex="4">
+                        ?>" tabindex="4">
                         </div>
                         <div class="row">
                             <div class="col-xs-6 col-sm-6 col-md-6">
@@ -1006,25 +1015,17 @@ function UserManagerPrivileges() {
         $GLOBALS['gFunction'][] = __FUNCTION__;
         Logger();
     }
-    echo "
-    <div class=\"center\">
-        <h2>Privilege Control</h2>
-        <input type=hidden name=from value=UserManagerPrivileges>
-        <input type=hidden name=userid id=userid>
-        ";
-    $acts = array();
-    $acts[] = "setValue('func','display')";
-    $acts[] = "addAction('Back')";
-    echo sprintf("<input type=button onClick=\"%s\" value=Back>", join(';', $acts));
+    $dreamweaver = array_key_exists('gDreamweaver', $GLOBALS) ? $GLOBALS['gDreamweaver'] : 0;
 
-    $acts = array();
-    $acts[] = "setValue('area','privileges')";
-    $acts[] = "setValue('func','modify')";
-    $acts[] = "addAction('Update')";
-    echo sprintf("<input type=button onClick=\"%s\" id=update value=Update>", join(';', $acts));
+    if (!$dreamweaver) {
+        echo "<div class=center>";
+        echo "<h2>Privilege Control</h2>";
 
-    echo "<br><br>";
-    echo "</div>";
+        echo "<input type=button value=Back onclick=\"setValue('from', 'MyDebug');addAction('Back');\">";
+        echo "<br><br>";
+
+        echo "</div>";
+    }
 
     echo "<table class=privileges>";
     echo "<tr>";
@@ -1066,11 +1067,28 @@ function UserManagerPrivileges() {
     $acts[] = "setValue('func','add')";
     $acts[] = "setValue('id','$id')";
     $acts[] = "addAction('Update')";
-    echo sprintf("<td><input type=button onClick=\"%s\" value=Add></td>", join(';', $acts));
+    $js = join(';',$acts);
+    echo sprintf("<td><input type=button onClick=\"%s\" value=Add></td>", $js);
 
     echo "</tr>";
     echo "</table>";
     echo "</div>";
+    
+    if( $dreamweaver ) {
+?>
+<script type="text/javascript">
+    var sidebar = document.getElementById("sidebar");
+    sidebar.innerHTML += '<hr>';
+    
+    var btn = document.createElement('button');
+    btn.id = 'update';
+    btn.setAttribute('class','sidebar-btn');
+    btn.setAttribute("onclick","<?php echo $js ?>");
+    btn.innerText = 'Update';
+    sidebar.appendChild(btn);
+</script>
+<?php
+    }
     if ($GLOBALS['gTrace'])
         array_pop($GLOBALS['gFunction']);
 }
@@ -1262,9 +1280,9 @@ function UserManagerReset() {
                         }
 
                         //check the action
-                        if( array_key_exists('action', $_POST ) ) {
+                        if (array_key_exists('action', $_POST)) {
                             $val = $_POST['action'];
-                        } elseif(array_key_exists ('action', $_GET ) ) {
+                        } elseif (array_key_exists('action', $_GET)) {
                             $val = $_GET['action'];
                         }
                         switch ($val) {
@@ -1488,7 +1506,7 @@ function UserManagerUpdate() {
         $query = join(",", $text);
         DoQuery($query);
 
-        $GLOBALS['gAction'] = 'Main';
+        $GLOBALS['gAction'] = 'start';
     }
 
     $area = $_POST['area'];
@@ -1740,22 +1758,30 @@ function UserManagerVerify() {
 
     $GLOBALS['gAction'] = 'Start';
     if ($user->isValidUsername($username)) {
-        MyDebug('* valid username');
+        Logger('* valid username');
         if (!isset($password)) {
             $gError[] = 'A password must be entered';
         }
 
         if ($user->login($username, $password)) {
+            Logger('* password match, continue');
             $_SESSION['username'] = $username;
-            $GLOBALS['gAction'] = 'Main';
+            $GLOBALS['gAction'] = 'home';
             $GLOBALS['gUserName'] = $username;
             UserManager('load', $_SESSION['userid']);
         } elseif (isset($_SESSION['disabled']) && $_SESSION['disabled']) {
-            $gError[] = "Your account is currently disabled, please contact " . SITEEMAIL;
+            $str = "Your account is currently disabled, please contact " . SITEEMAIL;
+            Logger($str);
+            $gError[] = $str;
+            $GLOBALS['gAction'] = 'start';
         } else {
-            $gError[] = 'Wrong username or password or your account has not been activated.';
+            $str = "Wrong username or password or your account has not been activated.";
+            Logger($str);
+            $gError[] = $str;
+            $GLOBALS['gAction'] = 'start';
         }
     } else {
+        Logger('* invalid username');
         $gError[] = 'Usernames are required to be Alphanumeric, and between 3-16 characters long';
     }
     $GLOBALS['gError'] = $gError;
@@ -1768,7 +1794,7 @@ function UserManagerVerify() {
     $ok = 0;
     if ($GLOBALS['gUserVerified'] == 0) {
         $_SESSION['authenticated'] = 0;
-        $GLOBALS['gAction'] = "Start";
+        $GLOBALS['gAction'] = "start";
         if (empty($_POST['username']) && $_POST['bypass'] != 1) {
             $GLOBALS['gMessage1'] = "&nbsp;** Please enter your username";
             if ($GLOBALS['gTrace'])
@@ -1848,7 +1874,7 @@ function UserManagerVerify() {
             } else {
                 $GLOBALS['gMessage2'] = "&nbsp;** Password verification error.  Please try again";
             }
-            $GLOBALS['gAction'] = "Start";
+            $GLOBALS['gAction'] = "start";
         }
     } else {
         $GLOBALS['gAction'] = empty($gActive) ? "Inactive" : "Welcome";

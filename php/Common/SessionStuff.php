@@ -1,71 +1,68 @@
 <?php
 
-function SessionStuff( $cmd )
-{
-	if( $GLOBALS['gTrace'] ) {
-		$GLOBALS['gFunction'][] = __FUNCTION__;
-		Logger();
-	}
-	
-	switch( $cmd )
-	{
-		case( 'start' ):
-			session_start();
-			if( empty( $_SESSION['userid'] ) ) {
-				if( $GLOBALS['gTrace'] ) Logger( "Starting new session" );
-			} else {
-				if( $GLOBALS['gTrace'] ) Logger( "Using existing session" );
-				UserManager( 'load', $_SESSION['userid'] );
-			}
-			break;
-			
-		case( 'display' ):
-			if( $GLOBALS['gDebug'] == 0 ) return;
-			foreach( $_COOKIE as $key => $val )
-			{
-				echo sprintf( "COOKIE[%s]=%s<br>", $key, $val );
-			}
-	
-			if(  isset( $_SESSION ) )
-			{
-				echo sprintf( "session_name: %s<br>", session_name() );
-				foreach( $_SESSION as $key => $val )
-				{
-					echo sprintf( "pre-SESSION[%s]=%s<br>", $key, $val );
-				}
-			}
-			if(  isset( $_SESSION ) )
-			{
-				foreach( $_SESSION as $key => $val )
-				{
-					echo sprintf( "post-SESSION[%s]=%s<br>", $key, $val );
-				}
-			}
-			break;
-		
-		case( 'logout' ):
-			unset( $text );
-			$text[] = "insert event_log set time=now()";
-			$text[] = "type = 'logout'";
-			$text[] = sprintf( "userid = '%d'", $GLOBALS['gUserId'] );
-			$text[] = sprintf( "item = 'session_id: %s'", session_id() );
-			$query = join( ",", $text );
-                        $GLOBALS['gDb'] = $GLOBALS['gDbVector'][0];
-			DoQuery( $query );
-                        $GLOBALS['gDb'] = $GLOBALS['gDbVector'][$_SESSION['dbId']];
-			foreach( array( 'authenticated', 'userid', 'username' ) as $key ) {
-				unset( $_SESSION[ $key ] );
-			}
-			$_SESSION = array();
-			unset( $_COOKIE[session_name()] );
-			if (isset($_COOKIE[session_name()]))
-			{
-				setcookie(session_name(), '', time()-42000, '/');
-			}
-			session_destroy();
-			$GLOBALS['gUserVerified'] = 0;
-			break;
-	}
-	if( $GLOBALS['gTrace'] ) array_pop( $GLOBALS['gFunction']);
+function SessionStuff($cmd) {
+    if ($GLOBALS['gTrace']) {
+        $GLOBALS['gFunction'][] = __FUNCTION__;
+        Logger();
+    }
+    $save_db = $GLOBALS['gDb'];
+    $GLOBALS['gDb'] = $GLOBALS['gDatabases'][$GLOBALS['gDbControlId']];
+
+    switch ($cmd) {
+        case( 'start' ):
+            session_start();
+            if (empty($_SESSION['userid'])) {
+                if ($GLOBALS['gTrace'])
+                    Logger("Starting new session");
+            } else {
+                if ($GLOBALS['gTrace'])
+                    Logger("Using existing session");
+                UserManager('load', $_SESSION['userid']);
+            }
+            break; 
+
+        case( 'display' ):
+            if ($GLOBALS['gDebug'] == 0)
+                return;
+            foreach ($_COOKIE as $key => $val) {
+                echo sprintf("COOKIE[%s]=%s<br>", $key, $val);
+            }
+
+            if (isset($_SESSION)) {
+                echo sprintf("session_name: %s<br>", session_name());
+                foreach ($_SESSION as $key => $val) {
+                    echo sprintf("pre-SESSION[%s]=%s<br>", $key, $val);
+                }
+            }
+            if (isset($_SESSION)) {
+                foreach ($_SESSION as $key => $val) {
+                    echo sprintf("post-SESSION[%s]=%s<br>", $key, $val);
+                }
+            }
+            break;
+
+        case( 'logout' ):
+            unset($text);
+            $text[] = "insert event_log set time=now()";
+            $text[] = "type = 'logout'";
+            $text[] = sprintf("userid = '%d'", $GLOBALS['gUserId']);
+            $text[] = sprintf("item = 'session_id: %s'", session_id());
+            $query = join(",", $text);
+            DoQuery($query);
+            foreach (array('authenticated', 'userid', 'username') as $key) {
+                unset($_SESSION[$key]);
+            }
+            $_SESSION = array();
+            unset($_COOKIE[session_name()]);
+            if (isset($_COOKIE[session_name()])) {
+                setcookie(session_name(), '', time() - 42000, '/');
+            }
+            session_destroy();
+            $GLOBALS['gUserVerified'] = 0;
+            break;
+    }
+    $GLOBALS['gDb'] = $save_db;
+
+    if ($GLOBALS['gTrace'])
+        array_pop($GLOBALS['gFunction']);
 }
-?>

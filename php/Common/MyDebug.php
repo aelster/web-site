@@ -18,7 +18,7 @@ function MyDebug() {
     $dreamweaver = array_key_exists('gDreamweaver',$GLOBALS) ? $GLOBALS['gDreamweaver'] : 0;
     
     $save_db = $GLOBALS['gDb'];
-    $GLOBALS['gDb'] = $GLOBALS['gDbAll'][$GLOBALS['gDbControlId']];
+    $GLOBALS['gDb'] = $GLOBALS['gDatabases'][$GLOBALS['gDbControlId']];
         
     if ($func == 'display') {
         if ( ! $dreamweaver) {

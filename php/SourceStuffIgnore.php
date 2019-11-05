@@ -8,7 +8,9 @@ $SourceStuff_DirsRegex = [
     '/usr\/local\/lib/',
     '/usr\/php/',
     '/usr\/local\/Cellar/',
-    '/pear/'
+    '/pear/',
+    '/config/',
+    '/var/'
 ];
 
 $SourceStuff_FilesRegex = [
@@ -30,5 +32,8 @@ $SourceStuff_FilesRegex = [
     '/php.ini/',
     '/error_log/',
     '/php-errors.log/',
-    '/rsync.ignore/'
+    '/rsync.ignore/',
+    '/\.md$/',
+    '/\.ste$/',
+    '/\.properties$/'
 ];
