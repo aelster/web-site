@@ -118,7 +118,7 @@ function EventLogDisplay() {
     $acts[] = "myConfirm('Are you sure you want to initialize the Event Log?')";
     $js = join(';',$acts);
 
-    if( $gDreamweaver ) {
+    if( $gDreamweaver == 23 ) {
 ?>
 <script type="text/javascript">
     var btn = document.createElement('button');

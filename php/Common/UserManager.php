@@ -593,7 +593,6 @@ function UserManagerLoad($userid) {
     $GLOBALS['gLastLogin'] = $row['lastlogin'];
     $GLOBALS['gActive'] = $row['active'];
     $GLOBALS['gDebug'] = $GLOBALS['gTrace'] = $row['debug'];
-    error_log("xxx: gDebug = " . $row['debug'] . " xxx");
 
     $query = 'select privileges.level, privileges.enabled from privileges, access';
     $query .= ' where access.privid = privileges.id and access.userid = :uid';
@@ -1074,7 +1073,7 @@ function UserManagerPrivileges() {
     echo "</table>";
     echo "</div>";
     
-    if( $dreamweaver ) {
+    if( $dreamweaver == 23 ) {
 ?>
 <script type="text/javascript">
     var sidebar = document.getElementById("sidebar");

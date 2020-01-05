@@ -12,23 +12,49 @@ function Logger() {
     $show_traceback = 0;
     
     $e = new Exception();
-    $x = $e->getTrace();
-    $depth = count($x);
+    $trace = $e->getTrace();
+    $depth = count($trace);
 
 //    $prefix .= sprintf( ">%s(%d)", $x[$depth-1]['function'], $x[$depth-2]['line'] );
     if( $depth >= 2 ) {
-        $prefix .= sprintf( "(%d)", $x[$depth-2]['line'] );
+        $prefix .= sprintf( "(%d)", $trace[$depth-2]['line'] );
     }
+    $strace = $vfn = $vln = array();
+ 
     if( $show_traceback ) {
-        echo "type(x) = " . gettype($x) . "<br>";
-        $v = array_keys($x);
-        echo "array_keys(x) = " . print_r($v,true) . "<br>";
+        for( $i = 0; $i < $depth; $i++ ) {
+            $vfn[] = $trace[$i]['function'];
+            $vln[] = $trace[$i]['line'];
+        }
+        $vfn[] = "Index";
+        $vln[] = -1;
+        $rvfn = array_reverse($vfn);
+        $rvln = array_reverse($vln);
+        for( $i = 0; $i < count( $vln); $i++ ) {
+            $strace[] = sprintf("%s(%d)", $rvfn[$i], $rvln[$i]);
+        }
+        $rstrace = array_reverse( $strace );
+        
+        $tb = join("->", $strace);
+
+        
+#        type(x) = " . gettype($x) . "<br>";
+#        $v = array_keys($x);
+#        echo "array_keys(x) = " . print_r($v,true) . "<br>";
+#        foreach( $x as $v ) {
+#            printf( "%s(%d)", $v[0]['function'], $v[0]['line'] );
+#        }
+/*        $obj = array_keys($x[0]);
         for( $i = 0; $i < count($x); $i++ ) {
             $v = array_keys($x[$i]);
             echo "array_keys(x[$i]) = " . print_r($v,true) . "<br>";
-            var_dump($x[$i]);
+            echo "ix:$i<br>" . var_dump($x[$i]);
+#            printf( "%s(%d):", $v[3][0], $v[1][0]);
         }
+*/    
+        
     }
+
     
     $num_args = func_num_args();
         
@@ -82,6 +108,9 @@ function Logger() {
                     echo "  debug('$indent$msg');" . $eol;
                 }
             }
+        }
+        if( $show_traceback ) {
+            echo "  debug('Tracebk: $tb');" . $eol;
         }
         echo "}" . $eol;
         echo "</script>" . $eol;
