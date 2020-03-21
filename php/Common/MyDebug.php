@@ -35,9 +35,9 @@ function MyDebug() {
           $jsx[] = "setValue('area','debug')";
           $jsx[] = "setValue('from','MyDebug')";
           $jsx[] = "setValue('func','update')";
-          $jsx[] = "addAction('Update')";
+          $jsx[] = "addAction('update')";
           $js = sprintf("onClick=\"%s\"", join(';', $jsx));
-          echo "<input type=button value=Update $tag $js>";
+          echo "<input type=button value=update $tag $js>";
          */
         echo "<table class=debug>";
         echo "<tr>";
@@ -77,7 +77,7 @@ function MyDebug() {
         $jsx[] = "setValue('area','debug')";
         $jsx[] = "setValue('from','" . __FUNCTION__ . "')";
         $jsx[] = "setValue('func','update')";
-        $jsx[] = "addAction('Update')";
+        $jsx[] = "addAction('update')";
         $js = sprintf("onChange=\"%s\"", join(';', $jsx));
         $tag = MakeTag("$fld");
         echo "<td>";
@@ -101,7 +101,7 @@ function MyDebug() {
         $jsx[] = "setValue('area','debug')";
         $jsx[] = "setValue('from','" . __FUNCTION__ . "')";
         $jsx[] = "setValue('func','update')";
-        $jsx[] = "addAction('Update')";
+        $jsx[] = "addAction('update')";
         $js = sprintf("onChange=\"%s\"", join(';', $jsx));
         $tag = MakeTag("$fld");
         $enabled = ($debug & $gDebugInLine) ? 1 : 0;
@@ -133,7 +133,7 @@ function MyDebug() {
         $jsx[] = "setValue('area','debug')";
         $jsx[] = "setValue('from','" . __FUNCTION__ . "')";
         $jsx[] = "setValue('func','update')";
-        $jsx[] = "addAction('Update')";
+        $jsx[] = "addAction('update')";
         $js = sprintf("onChange=\"%s\"", join(';', $jsx));
         $tag = MakeTag("$fld");
 
@@ -167,7 +167,7 @@ function MyDebug() {
         $jsx[] = "setValue('area','debug')";
         $jsx[] = "setValue('from','" . __FUNCTION__ . "')";
         $jsx[] = "setValue('func','update')";
-        $jsx[] = "addAction('Update')";
+        $jsx[] = "addAction('update')";
         $js = sprintf("onChange=\"%s\"", join(';', $jsx));
         $tag = MakeTag("$fld");
 
@@ -200,7 +200,7 @@ function MyDebug() {
         $jsx[] = "setValue('area','debug')";
         $jsx[] = "setValue('from','" . __FUNCTION__ . "')";
         $jsx[] = "setValue('func','update')";
-        $jsx[] = "addAction('Update')";
+        $jsx[] = "addAction('update')";
         $js = sprintf("onChange=\"%s\"", join(';', $jsx));
         $tag = MakeTag("$fld");
 
@@ -233,7 +233,7 @@ function MyDebug() {
                     if( ($debug & $$var ) > 0 ) {
                         $debug -= $$var;
                         if ($fld == 'DebugWindow') {
-                            echo "<script type='text/javascript'>closeDebugWindow();</script>";
+                            #echo "<script type='text/javascript'>closeDebugWindow();</script>";
                         }
                     }
                 } elseif ($_POST[$fld] == 1) {

@@ -2,9 +2,10 @@ var plusImg = new Image();
 plusImg.src = "/images/plus.gif";
 var minusImg = new Image();
 minusImg.src = "/images/minus.gif";
-var debug_disabled = 1;
+var debug_disabled = 0;
+var debugWindow;
 
-function _init(){
+function _init() {
     createDebugWindow();
     debug('_init');
     hideAll();
@@ -71,36 +72,44 @@ function closeDebugWindow() {
         window.top.debugWindow.close();
     }
 }
-function createDebugWindow() {
+function createDebugWindow(tag = 'xx') {
     if (debug_disabled) {
         return;
     }
-    if (window.top.debugWindow) {
-        window.top.debugWindow.document.close();
+
+    var windowName = '';
+    if (tag == 'xx') {
+        windowName = 'Debug Window';
+    } else {
+        windowName = 'Debug Window - ' + tag;
     }
+    debugWindow = window.open(
+            "",
+            "Debug",
+            "left=0,top=0,width=500,height=700,scrollbars=yes,status=yes,resizable=yes"
+            );
 
-    window.top.debugWindow =
-            window.open("",
-                    "Debug",
-                    "left=0,top=0,width=500,height=700,scrollbars=yes,status=yes,resizable=yes");
 
-    window.top.debugWindow.opener = self;
-
+    debugWindow.focus();
     // open the document for writing
-    window.top.debugWindow.document.open();
-    window.top.debugWindow.document.write(
-            "<HTML><HEAD><TITLE>Debug Window</TITLE></HEAD><BODY><PRE>\n");
+    debugWindow.document.open();
+    debugWindow.document.write(
+            '<HTML><HEAD><TITLE>' + windowName + '</TITLE></HEAD><BODY><PRE>\n');
 }
 function debug(text) {
     var str;
-    if (window.top.debugWindow && !window.top.debugWindow.closed) {
+    if (!debugWindow) {
+        _init();
+    }
+
+    if (debugWindow && !debugWindow.closed) {
         ;
         str = '';
         for (var i = 0; i < arguments.length; i++)
         {
             str += arguments[i];
         }
-        window.top.debugWindow.document.write(str + "\n");
+        debugWindow.document.write(str + "\n");
     }
 }
 function doChallengeResponse() {
@@ -161,6 +170,12 @@ function getPassword(e) {
         f.focus();
     }
 }
+function hideAll() {
+    var divs = document.getElementsByTagName("div");
+    for (var i = 0; i < divs.length; i++) {
+        divs[i].style.display = 'none';
+    }
+}
 function hideDebug() {
     if (window.top.debugWindow && !window.top.debugWindow.closed) {
         window.top.debugWindow.close();
@@ -190,7 +205,7 @@ function mungepwd() {
 function myConfirm(prompt) {
     var response = confirm(prompt);
     if (response) {
-        addAction('Update');
+        addAction('update');
     }
 }
 function pwdGen() {
@@ -267,6 +282,13 @@ function showHideDiv(e, divx) {
     } else {
         d.style.display = "none";
     }
+}
+function sleep(milliseconds) {
+    const date = Date.now();
+    let currentDate = null;
+    do {
+        currentDate = Date.now();
+    } while (currentDate - date < milliseconds);
 }
 function toggleBgRed(id) {
     var e = document.getElementById(id);
@@ -376,7 +398,7 @@ function toggleVisOffOn(id1, id2) {
         alert("can't find id: " + id2);
     e.style.display = 'block';
 }
-function updateFormField(id,val) {
+function updateFormField(id, val) {
     var e = document.getElementById(id);
     if (!e)
         alert("Can't find FormField: [" + id + "]");

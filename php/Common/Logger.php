@@ -2,6 +2,7 @@
 
 function Logger() {
     $gDebug = $GLOBALS['gDebug'];
+    if( $gDebug == 0 ) return;
     $gDebugInLine = $GLOBALS['gDebugInLine'];
     $gDebugErrorLog = $GLOBALS['gDebugErrorLog'];
     $gDebugWindow = $GLOBALS['gDebugWindow'];

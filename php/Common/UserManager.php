@@ -9,9 +9,9 @@ function UserManager() {
     $save_db = $GLOBALS['gDb'];
     $GLOBALS['gDb'] = $GLOBALS['gDatabases'][$GLOBALS['gDbControlId']];
 
-    $area = func_get_arg(0);
+    $fn = func_get_arg(0);
 
-    switch ($area) {
+    switch ($fn) {
         case 'activate':
             UserManagerActivate();
             break;
@@ -77,7 +77,7 @@ function UserManager() {
             break;
 
         default:
-            echo "Uh-oh:  Contact Andy regarding UserManager( $area )<br>";
+            echo "Uh-oh:  Contact Andy regarding UserManager( $fn )<br>";
             break;
     }
 
@@ -85,7 +85,7 @@ function UserManager() {
 
     if ($GLOBALS['gTrace'])
         array_pop($GLOBALS['gFunction']);
-    if ($area == 'authorized')
+    if ($fn == 'authorized')
         return $auth;
 }
 
@@ -129,10 +129,10 @@ function UserManagerAdd() {
     }
 
     $text = array();
-    $text[] = sprintf("insert into users set first = '%s'", $_POST['first']);
-    $text[] = sprintf("last = '%s'", $_POST['last']);
-    $text[] = sprintf("email = '%s'", $_POST['email']);
-    $text[] = sprintf("username = '%s'", $_POST['username']);
+    $text[] = sprintf("insert into users set first = '%s'", $_POST['u_0_first']);
+    $text[] = sprintf("last = '%s'", $_POST['u_0_last']);
+    $text[] = sprintf("email = '%s'", $_POST['u_0_email']);
+    $text[] = sprintf("username = '%s'", $_POST['u_0_username']);
     $text[] = sprintf("password = '%s'", md5(sprintf("%d", time())));
     $text[] = sprintf("active = '1'");
     $query = join(",", $text);
@@ -144,7 +144,7 @@ function UserManagerAdd() {
         $text[] = "insert event_log set time=now()";
         $text[] = "type = 'control'";
         $text[] = sprintf("userid = '%d'", $GLOBALS['gUserId']);
-        $text[] = sprintf("item = 'added user %s %s, username %s, id %d, e-mail %s'", $_POST['first'], $_POST['last'], $_POST['username'], $id, $_POST['email']);
+        $text[] = sprintf("item = 'added user %s %s, username %s, id %d, e-mail %s'", $_POST['u_0_first'], $_POST['u_0_last'], $_POST['u_0_username'], $id, $_POST['u_0_email']);
         $query = join(",", $text);
         DoQuery($query);
 
@@ -233,7 +233,6 @@ function UserManagerDisplay() {
         Logger();
     }
     $dreamweaver = array_key_exists('gDreamweaver', $GLOBALS) ? $GLOBALS['gDreamweaver'] : 0;
-    echo "<div class=center>";
     if (!$dreamweaver) {
         echo "<div class=center>";
 
@@ -249,18 +248,10 @@ function UserManagerDisplay() {
         $acts = [
             "setValue('area','update')",
             "setValue('id', '" . $GLOBALS['gUserId'] . "')",
-            "addAction('Update')"
+            "addAction('update')"
         ];
         echo sprintf("<input type=button onClick=\"%s\" id=update value=Update>", join(';', $acts));
     }
-
-    $acts = [
-        "setValue('area','display')",
-        "addAction('New')"
-    ];
-    echo sprintf("<input type=button onClick=\"%s\" value='New User'>", join(';', $acts));
-    echo "<br>";
-    echo "</div>";
 
     $vprivs = array();
     $vlevels = array();
@@ -283,7 +274,6 @@ function UserManagerDisplay() {
         if ($stmt->rowCount() > 0) {
             $divOpened = 1;
 
-            echo "<br>";
             echo "<div class=$name>";
             echo "<h3>$name</h3>";
 
@@ -343,11 +333,12 @@ function UserManagerDisplay() {
 
             echo "  <td>";
             $acts = array();
-            $acts[] = "setValue('area','delete')";
+            $acts[] = "setValue('area','users')";
+            $acts[] = "setValue('func','delete')";
             $acts[] = "setValue('id', '$id')";
             $name = sprintf("%s (%s %s)", $usr['username'], $usr['first'], $usr['last']);
             $acts[] = "myConfirm('Are you sure you want to delete user $name')";
-            echo sprintf("<input type=button onClick=\"%s\" id=update value=Del>", join(';', $acts));
+            echo sprintf("<input type=button onClick=\"%s\" value=Del>", join(';', $acts));
             echo "</td>\n";
 
             echo "</tr>\n";
@@ -357,8 +348,90 @@ function UserManagerDisplay() {
         echo "</table>";
         if ($divOpened) {
             echo "</div>";
+            echo "<br>";
         }
     }
+
+    if (UserManagerAuthorized('control')) {
+        echo "<div class=center>";
+        echo "<h3>New Users</h3>";
+
+        echo "<table class=usermanager>";
+
+        echo "<thead>";
+        echo "<tr>";
+        echo "<th>Id</th>";
+        echo "<th>Username</th>";
+        echo "<th>First</th>";
+        echo "<th>Last</th>";
+        echo "<th>E-Mail</th>";
+        echo "<th>Access</th>";
+        echo "<th>Last Login</th>";
+        echo "<th>Disabled</th>";
+        echo "<th>Actions</th>";
+        echo "</tr>";
+        echo "</thead>";
+
+        echo "<tbody>";
+        $id = 0;
+        $jscript = "onChange=\"addField('$id');toggleBgRed('update');\"";
+
+        echo "<tr>\n";
+        printf("  <td>$id</td>\n");
+        printf("  <td><input type=text name=u_%d_username value=\"%s\" $jscript size=10></td>\n", $id, $usr['username']);
+        printf("  <td><input type=text name=u_%d_first value=\"%s\" $jscript size=10></td>\n", $id, $usr['first']);
+        printf("  <td><input type=text name=u_%d_last value=\"%s\" $jscript size=10></td>\n", $id, $usr['last']);
+        printf("  <td><input type=text name=u_%d_email value=\"%s\" $jscript size=25></td>\n", $id, $usr['email']);
+
+        printf("  <td><select name=u_%d_privid $jscript>", $id);
+        $defSet = 0;
+        $defMax = 0;
+        foreach ($vprivs as $name => $privid) {
+            if ($vlevels[$name] > $GLOBALS['gAccessLevel'])
+                continue;
+            $defSet = ( $usr['PrivId'] == $privid ) ? $privid : 0;
+            if( $privid > $defMax ) $defMax = $privid;
+        }
+        if( $defSet == 0 ) $defSet = $defMax; // Force a selection of at least one new value
+        foreach ($vprivs as $name => $privid) {
+            if ($vlevels[$name] > $GLOBALS['gAccessLevel'])
+                continue;
+            $opt = ( $privid == $defSet ) ? 'selected' : '';
+            echo "<option value=$privid $opt>$name</option>";
+        }
+        echo "</select></td>\n";
+
+        if ($usr['lastlogin'] == '0000-00-00 00:00:00')
+            $str = "never";
+        else {
+            $diff = time() - strtotime($usr['lastlogin']);
+            $days = $diff / 60 / 60 / 24;
+            if ($days >= 1) {
+                $str = sprintf("%d days ago", $days);
+            } else {
+                $str = $usr['lastlogin'];
+            }
+        }
+        echo "  <td align=center>$str</td>\n";
+
+        $checked = $usr['disabled'] ? "checked" : "";
+        printf("  <td style='text-align: center;'><input type=checkbox name=u_%d_disabled value=1 $checked $jscript ></td>\n", $id);
+
+        echo "  <td>";
+        $acts = array();
+        $acts[] = "setValue('area','users')";
+        $acts[] = "setValue('func','add')";
+        $acts[] = "setValue('id', '$id')";
+        $name = sprintf("%s (%s %s)", $usr['username'], $usr['first'], $usr['last']);
+        $acts[] = "addAction('update')";
+        echo sprintf("<input type=button onClick=\"%s\" value=Add>", join(';', $acts));
+        echo "</td>\n";
+
+        echo "</tr>\n";
+        echo "</tbody>";
+        echo "</table>";
+    }
+
     if ($GLOBALS['gTrace'])
         array_pop($GLOBALS['gFunction']);
 }
@@ -397,7 +470,7 @@ function UserManagerEdit() {
     echo "</table>";
     echo "</div>";
     echo "<input type=submit name=action value=Back>";
-    echo "<input type=button onclick=\"setValue( 'id', '$id'); setValue( 'btn_action', 'Update' ); addAction('Update');\" value=Update>";
+    echo "<input type=button onclick=\"setValue( 'id', '$id'); setValue( 'btn_action', 'Update' ); addAction('update');\" value=Update>";
 
     if ($GLOBALS['gTrace'])
         array_pop($GLOBALS['gFunction']);
@@ -628,30 +701,30 @@ function UserManagerLogin() {
             <div class="form-group">
                 <h2>Please Login</h2>
                 <input type=button <?php echo $js ?> class="form-control input-lg" value="Forgot your password?" style="height:40px;">
-                <?php
-                //check for any errors
-                if (isset($GLOBALS['gError'])) {
-                    foreach ($GLOBALS['gError'] as $error) {
-                        echo '<h2 class="bg-danger">' . $error . '</h2>';
-                    }
-                }
+    <?php
+    //check for any errors
+    if (isset($GLOBALS['gError'])) {
+        foreach ($GLOBALS['gError'] as $error) {
+            echo '<h2 class="bg-danger">' . $error . '</h2>';
+        }
+    }
 
-                if (isset($GLOBALS['gArea'])) {
+    if (isset($GLOBALS['gArea'])) {
 
-                    //check the action
-                    switch ($GLOBALS['gArea']) {
-                        case 'active':
-                            echo "<h2 class='bg-success'>Your account is now active you may now log in.</h2>";
-                            break;
-                        case 'check':
-                            echo "<h2 class='bg-success'>Please check your inbox for a reset link.</h2>";
-                            break;
-                        case 'resetAccount':
-                            echo "<h2 class='bg-success'>Password changed, you may now login.</h2>";
-                            break;
-                    }
-                }
-                ?>
+        //check the action
+        switch ($GLOBALS['gArea']) {
+            case 'active':
+                echo "<h2 class='bg-success'>Your account is now active you may now log in.</h2>";
+                break;
+            case 'check':
+                echo "<h2 class='bg-success'>Please check your inbox for a reset link.</h2>";
+                break;
+            case 'resetAccount':
+                echo "<h2 class='bg-success'>Password changed, you may now login.</h2>";
+                break;
+        }
+    }
+    ?>
             </div>
             <hr>
             <div class="form-group">
@@ -663,7 +736,7 @@ function UserManagerLogin() {
             $jsx = array();
             $jsx[] = "addAction('verify')";
             $js = sprintf("onClick=\"%s\"", join(';', $jsx));
-                ?>" tabindex="1">
+    ?>" tabindex="1">
             </div>
 
             <div class="form-group">
@@ -845,31 +918,31 @@ function UserManagerNew() {
                     <p>Already a member? <a href='admin.php'>Login</a></p>
                     <hr>
 
-                    <?php
-                    //check for any errors
-                    if (isset($error)) {
-                        foreach ($error as $error) {
-                            echo '<p class="bg-danger">' . $error . '</p>';
-                        }
-                    }
+    <?php
+    //check for any errors
+    if (isset($error)) {
+        foreach ($error as $error) {
+            echo '<p class="bg-danger">' . $error . '</p>';
+        }
+    }
 
-                    //if action is joined show sucess
-                    if (isset($action) && $action == 'joined') {
-                        echo "<h2 class='bg-success'>Registration successful, please check your email to activate your account.</h2>";
-                        $acts = [
-                            "setValue('from','" . __FUNCTION__ . "')",
-                            "addAction('Back')"
-                        ];
-                        echo sprintf("<input type=button onClick=\"%s\" value='Back' class='btn btn-primary btn-block btn-lg' tabindex='7'>", join(';', $acts));
-                    } else {
-                        ?>
+    //if action is joined show sucess
+    if (isset($action) && $action == 'joined') {
+        echo "<h2 class='bg-success'>Registration successful, please check your email to activate your account.</h2>";
+        $acts = [
+            "setValue('from','" . __FUNCTION__ . "')",
+            "addAction('Back')"
+        ];
+        echo sprintf("<input type=button onClick=\"%s\" value='Back' class='btn btn-primary btn-block btn-lg' tabindex='7'>", join(';', $acts));
+    } else {
+        ?>
 
                         <div class="form-group">
                             <input type="text" name="username" id="username" class="form-control input-lg" placeholder="User Name" value="<?php
                 if (isset($error)) {
                     echo htmlspecialchars($_POST['username'], ENT_QUOTES);
                 }
-                        ?>" tabindex="1">
+        ?>" tabindex="1">
                         </div>
                         <div class="row">
                             <div class="col-xs-6 col-sm-6 col-md-6">
@@ -878,7 +951,7 @@ function UserManagerNew() {
                     if (isset($error)) {
                         echo htmlspecialchars($_POST['firstName'], ENT_QUOTES);
                     }
-                        ?>" tabindex="2">
+        ?>" tabindex="2">
                                 </div>
                             </div>
                             <div class="col-xs-6 col-sm-6 col-md-6">
@@ -887,7 +960,7 @@ function UserManagerNew() {
                             if (isset($error)) {
                                 echo htmlspecialchars($_POST['lastName'], ENT_QUOTES);
                             }
-                        ?>" tabindex="3">
+        ?>" tabindex="3">
                                 </div>
                             </div>
                         </div>
@@ -897,7 +970,7 @@ function UserManagerNew() {
                             if (isset($error)) {
                                 echo htmlspecialchars($_POST['email'], ENT_QUOTES);
                             }
-                        ?>" tabindex="4">
+        ?>" tabindex="4">
                         </div>
                         <div class="row">
                             <div class="col-xs-6 col-sm-6 col-md-6">
@@ -914,13 +987,13 @@ function UserManagerNew() {
 
                         <div class="row">
                             <div class="col-xs-6 col-md-6">
-                                <?php
-                                $acts = [
-                                    "setValue('area','verify')",
-                                    "addAction('New')"
-                                ];
-                                echo sprintf("<input type=button onClick=\"%s\" value='Register' class='btn btn-primary btn-block btn-lg' tabindex='7'>", join(';', $acts));
-                                ?>
+        <?php
+        $acts = [
+            "setValue('area','verify')",
+            "addAction('New')"
+        ];
+        echo sprintf("<input type=button onClick=\"%s\" value='Register' class='btn btn-primary btn-block btn-lg' tabindex='7'>", join(';', $acts));
+        ?>
                             </div>
                         </div>
                     </form>
@@ -944,7 +1017,7 @@ function UserManagerLogout() {
     echo "<div class=row>";
     echo "<h2 class='bg-success'>You have been successfully logged out</h2>";
     echo "
-    <input type=submit name=action value=Continue>
+    <input type=submit name=action value=Start>
     </div>
     </div>
     ";
@@ -999,7 +1072,7 @@ function UserManagerPassword() {
     $acts = array();
     $acts[] = "mungepwd()";
     $acts[] = "setValue('area','new_pass')";
-    $acts[] = "addAction('Update')";
+    $acts[] = "addAction('update')";
     $click = "onClick=\"" . join(';', $acts) . "\"";
     echo "
         <input type=button id=userSettingsUpdate name=userSettingsUpdate disabled $click value=Update></th>
@@ -1065,28 +1138,28 @@ function UserManagerPrivileges() {
     $acts[] = "setValue('area','privileges')";
     $acts[] = "setValue('func','add')";
     $acts[] = "setValue('id','$id')";
-    $acts[] = "addAction('Update')";
-    $js = join(';',$acts);
+    $acts[] = "addAction('update')";
+    $js = join(';', $acts);
     echo sprintf("<td><input type=button onClick=\"%s\" value=Add></td>", $js);
 
     echo "</tr>";
     echo "</table>";
     echo "</div>";
-    
-    if( $dreamweaver == 23 ) {
-?>
-<script type="text/javascript">
-    var sidebar = document.getElementById("sidebar");
-    sidebar.innerHTML += '<hr>';
-    
-    var btn = document.createElement('button');
-    btn.id = 'update';
-    btn.setAttribute('class','sidebar-btn');
-    btn.setAttribute("onclick","<?php echo $js ?>");
-    btn.innerText = 'Update';
-    sidebar.appendChild(btn);
-</script>
-<?php
+
+    if ($dreamweaver == 23) {
+        ?>
+        <script type="text/javascript">
+            var sidebar = document.getElementById("sidebar");
+            sidebar.innerHTML += '<hr>';
+
+            var btn = document.createElement('button');
+            btn.id = 'update';
+            btn.setAttribute('class', 'sidebar-btn');
+            btn.setAttribute("onclick", "<?php echo $js ?>");
+            btn.innerText = 'Update';
+            sidebar.appendChild(btn);
+        </script>
+        <?php
     }
     if ($GLOBALS['gTrace'])
         array_pop($GLOBALS['gFunction']);
@@ -1259,40 +1332,40 @@ function UserManagerReset() {
             <div class="col-xs-12 col-sm-8 col-md-6 col-sm-offset-2 col-md-offset-3">
 
 
-                <?php
-                if (isset($stop)) {
+    <?php
+    if (isset($stop)) {
 
-                    echo "<p class='bg-danger'>$stop</p>";
-                } else {
-                    ?>
+        echo "<p class='bg-danger'>$stop</p>";
+    } else {
+        ?>
 
                     <form role="form" method="post" action="" autocomplete="off">
                         <h2>Change Password</h2>
                         <hr>
 
-                        <?php
-                        //check for any errors
-                        if (isset($error)) {
-                            foreach ($error as $error) {
-                                echo '<p class="bg-danger">' . $error . '</p>';
-                            }
-                        }
+        <?php
+        //check for any errors
+        if (isset($error)) {
+            foreach ($error as $error) {
+                echo '<p class="bg-danger">' . $error . '</p>';
+            }
+        }
 
-                        //check the action
-                        if (array_key_exists('action', $_POST)) {
-                            $val = $_POST['action'];
-                        } elseif (array_key_exists('action', $_GET)) {
-                            $val = $_GET['action'];
-                        }
-                        switch ($val) {
-                            case 'active':
-                                echo "<h2 class='bg-success'>Your account is now active you may now log in.</h2>";
-                                break;
-                            case 'reset':
-                                echo "<h2 class='bg-success'>Please check your inbox for a reset link.</h2>";
-                                break;
-                        }
-                        ?>
+        //check the action
+        if (array_key_exists('action', $_POST)) {
+            $val = $_POST['action'];
+        } elseif (array_key_exists('action', $_GET)) {
+            $val = $_GET['action'];
+        }
+        switch ($val) {
+            case 'active':
+                echo "<h2 class='bg-success'>Your account is now active you may now log in.</h2>";
+                break;
+            case 'reset':
+                echo "<h2 class='bg-success'>Please check your inbox for a reset link.</h2>";
+                break;
+        }
+        ?>
 
                         <div class="row">
                             <div class="col-xs-6 col-sm-6 col-md-6">
@@ -1310,20 +1383,20 @@ function UserManagerReset() {
                         <hr>
                         <div class="row">
                             <div class="col-xs-6 col-md-6">
-                                <?php
-                                $acts = array();
-                                $acts[] = "setValue('area','Reset')";
-                                $acts[] = "setValue('func','verify')";
-                                $acts[] = "setValue('id', '" . $GLOBALS['gUserId'] . "')";
-                                $acts[] = "setValue('key', '" . $GLOBALS['gResetKey'] . "')";
-                                $acts[] = "addAction('Reset')";
-                                echo sprintf("<input type=button onClick=\"%s\" id=update value='Change Password' class=\"btn btn-primary btn-block btn-lg\" tabindex=\"3\">", join(';', $acts));
-                                ?>
+        <?php
+        $acts = array();
+        $acts[] = "setValue('area','Reset')";
+        $acts[] = "setValue('func','verify')";
+        $acts[] = "setValue('id', '" . $GLOBALS['gUserId'] . "')";
+        $acts[] = "setValue('key', '" . $GLOBALS['gResetKey'] . "')";
+        $acts[] = "addAction('Reset')";
+        echo sprintf("<input type=button onClick=\"%s\" id=update value='Change Password' class=\"btn btn-primary btn-block btn-lg\" tabindex=\"3\">", join(';', $acts));
+        ?>
                             </div>
                         </div>
                     </form>
 
-                <?php } ?>
+    <?php } ?>
             </div>
         </div>
 
@@ -1468,7 +1541,7 @@ function UserManagerSettings() {
 
     echo "<tr>";
     echo "<th></th>";
-    echo "<th align=center><input type=button class=btn id=userSettingsUpdate name=action onClick=\"mungepwd(); setValue( 'userid', '$userid'); addAction('Update');\" value=Update></th>";
+    echo "<th align=center><input type=button class=btn id=userSettingsUpdate name=action onClick=\"mungepwd(); setValue( 'userid', '$userid'); addAction('update');\" value=Update></th>";
     echo "<th></th>";
     echo "</tr>";
 
@@ -1511,45 +1584,9 @@ function UserManagerUpdate() {
     $area = $_POST['area'];
     $func = $_POST['func'];
 
-    if ($area == "add") {
-        $uname = addslashes($_POST['username']);
+    logger("made it here. area: [$area], func: [$func]");
 
-        $acts = array();
-        $acts[] = sprintf("username = '%s'", $uname);
-        $acts[] = sprintf("last = '%s'", addslashes($_POST['last']));
-        $acts[] = sprintf("first = '%s'", addslashes($_POST['first']));
-        $acts[] = sprintf("email = '%s'", addslashes($_POST['email']));
-        $acts[] = sprintf("password = '%s'", md5(sprintf("%d", time())));
-        $acts[] = sprintf("disabled = '0'");
-        $query = "insert into users set " . join(',', $acts);
-        DoQuery($query);
-        $uid = $GLOBALS['gPDO_lastInsertId'];
-
-        $text = array();
-        $text[] = "insert event_log set time=now()";
-        $text[] = "type = 'user'";
-        $text[] = "userid = '$id'";
-        $text[] = sprintf("item = 'add %s(%d), set %s'", $uname, $uid, addslashes(join(',', $acts)));
-        $query = join(',', $text);
-        DoQuery($query);
-
-        $acc = $_POST['privid'];
-        $acts = array();
-        $acts[] = "userid = '$uid'";
-        $acts[] = "privid = '$acc'";
-        $query = "insert into access set " . join(',', $acts);
-        DoQuery($query);
-
-        $text = array();
-        $text[] = "insert event_log set time=now()";
-        $text[] = "type = 'access'";
-        $text[] = "userid = '$id'";
-        $text[] = sprintf("item = 'update %s(%d), set %s'", $uname, $uid, addslashes(join(',', $acts)));
-        $query = join(',', $text);
-        DoQuery($query);
-    }
-
-    if ($area == "delete") {
+    if ($area == "xxdelete") {
         $id = $_POST['id'];
         $query = "delete from users where userid = '$id'";
         DoQuery($query);
@@ -1606,7 +1643,7 @@ function UserManagerUpdate() {
             DoQuery($query);
         }
 
-        if ($func == "modify") {
+        if ($func == "update") {
             $done = array();
             $pids = preg_split('/,/', $_POST['fields'], NULL, PREG_SPLIT_NO_EMPTY);
             foreach ($pids as $pid) {
@@ -1650,11 +1687,12 @@ function UserManagerUpdate() {
     }
 
 
-    if ($area == "update") {
-        $done = array();
-        $uids = preg_split('/,/', $_POST['fields'], NULL, PREG_SPLIT_NO_EMPTY);
-        foreach ($uids as $uid) {
-            if (!empty($uid)) {
+    if ($area == "users") {
+        if ($func == "add") {
+            $done = array();
+            $v = preg_split('/,/', $_POST['fields'], NULL, PREG_SPLIT_NO_EMPTY);
+            $uids = array_unique($v);
+            foreach ($uids as $uid) {
                 if (array_key_exists($uid, $done))
                     continue;
                 $done[$uid] = 1;
@@ -1685,8 +1723,11 @@ function UserManagerUpdate() {
                 if ($val != $user['disabled'])
                     $acts[] = "disabled = '${val}'";
 
+                logger("  # of actions: " . count($acts));
+                logger("  acts: " . print_r($acts, true));
                 if (count($acts)) {
                     $query = "update users set " . join(',', $acts) . " where userid = '$uid'";
+                    logger("  query: [$query]");
                     DoQuery($query);
                     if ($GLOBALS['gPDO_num_rows'] == 0) {
                         $acts = array();
@@ -1694,11 +1735,14 @@ function UserManagerUpdate() {
                             $tag = sprintf("u_%d_%s", $uid, $fld);
                             $acts[] = sprintf("%s = '%s'", $fld, addslashes($_POST[$tag]));
                         }
+                        $acts[] = sprintf("password = '%s'", md5(sprintf("%d", time())));
+
                         $query = "insert into users set " . join(',', $acts);
                         DoQuery($query);
 
                         $tag = sprintf("u_%d_%s", $uid, 'privid');
                         $acc = $_POST[$tag];
+                        $uid = $GLOBALS['gPDO_lastInsertID'];
                         $acts = array();
                         $acts[] = "userid = '$uid'";
                         $acts[] = "privid = '$acc'";
@@ -1709,7 +1753,7 @@ function UserManagerUpdate() {
                     $text = array();
                     $text[] = "insert event_log set time=now()";
                     $text[] = "type = 'user'";
-                    $text[] = "userid = '$userid'";
+                    $text[] = "userid = '$uid'";
                     $text[] = sprintf("item = 'update %s(%d), set %s'", $user['username'], $uid, addslashes(join(',', $acts)));
                     $query = join(',', $text);
                     DoQuery($query);
@@ -1727,12 +1771,23 @@ function UserManagerUpdate() {
                     $text = array();
                     $text[] = "insert event_log set time=now()";
                     $text[] = "type = 'user'";
-                    $text[] = "userid = '$userid'";
+                    $text[] = "userid = '$uid'";
                     $text[] = sprintf("item = 'update %s(%d), set privid = %s'", $user['username'], $uid, $_POST[$tag]);
                     $query = join(',', $text);
                     DoQuery($query);
                 }
             }
+        } elseif ($func == "delete") {
+            $uid = $_POST['id'];
+            DoQuery("delete from users where userid = $uid");
+            DoQuery("delete from access where Userid = $uid");
+            $text = array();
+            $text[] = "insert event_log set time=now()";
+            $text[] = "type = 'user'";
+            $text[] = "userid = '$uid'";
+            $text[] = sprintf("item = 'deleted user and access for userid $uid'");
+            $query = join(',', $text);
+            DoQuery($query);
         }
     }
 
@@ -1766,6 +1821,7 @@ function UserManagerVerify() {
             Logger('* password match, continue');
             $_SESSION['username'] = $username;
             $GLOBALS['gAction'] = 'home';
+            $GLOBALS['gMode'] = 'office';
             $GLOBALS['gUserName'] = $username;
             UserManager('load', $_SESSION['userid']);
         } elseif (isset($_SESSION['disabled']) && $_SESSION['disabled']) {
