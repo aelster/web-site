@@ -103,10 +103,12 @@ function Logger() {
         if( $num_args ) { // Implies one or more args
             $arg = func_get_arg(0);
             if( is_string($arg) ) {
-                echo "  debug('$indent$arg');" . $eol;
+                 $str = preg_replace('/\'/', '-', $arg);
+               echo "  debug('$indent$str');" . $eol;
             } else {
                 foreach( $arg as $msg ) {
-                    echo "  debug('$indent$msg');" . $eol;
+                    $str = preg_replace('/\'/', '-', $msg);
+                    echo "  debug('$indent$str');" . $eol;
                 }
             }
         }
@@ -125,7 +127,8 @@ function Logger() {
         if( $num_args ) { // Implies one or more args
             $arg = func_get_arg(0);
             if( is_string($arg) ) {
-                echo $indent . $arg . $eol;
+                $str = $arg;
+                echo $indent . $str . $eol;
             } else {
                 foreach( $arg as $msg ) {
                     echo $indent . $msg . $eol;
