@@ -1,7 +1,7 @@
 var plusImg = new Image();
-plusImg.src = "/images/plus.gif";
+plusImg.src = "images/plus.gif";
 var minusImg = new Image();
-minusImg.src = "/images/minus.gif";
+minusImg.src = "images/minus.gif";
 var debug_disabled = 0;
 var debugWindow;
 
