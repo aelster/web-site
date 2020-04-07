@@ -1,0 +1,1 @@
+This folder is designed for server wide scripts and supporting documents. Project and/or individual customizations should be in a sub-folder titled by name of the server/project

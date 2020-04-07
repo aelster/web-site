@@ -1,0 +1,9 @@
+# Directories
+nbproject
+
+# Files
+local_ihds.php
+local_mailer.php
+rsync.ignore
+local_update
+*~

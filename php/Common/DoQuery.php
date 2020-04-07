@@ -1,51 +1,52 @@
 <?php
 
-global $mysql_last_id;
-global $mysql_numrows;
-global $mysql_result;
+function DoQuery($query) {
+    $debug = $GLOBALS['gDebug'];
+    
+    $num = 0;
+    $stmt = NULL;
+    $db = $GLOBALS['gDb'];
+    
+    try {
+        if (preg_match("/start transaction/i", $query )) {
+            $db->beginTransaction();
+        } elseif (preg_match("/commit/i", $query )) {
+            $db->commit();
+        } elseif (preg_match("/rollback/i", $query )) {
+            $db->rollBack();
+        } else {
+            $stmt = $db->prepare($query);
+            if (func_num_args() == 1) {
+                $stmt->execute();
+            } else {
+                $args = func_get_arg(1);
+                $stmt->execute($args);
+            }
+            $GLOBALS['gPDO_num_rows'] = $num = $stmt->rowCount();
+            $GLOBALS['gPDO_lastInsertID'] = $db->lastInsertID();
+        }
 
-function DoQuery()
-{
-	$num_args = func_num_args();
-	$query = func_get_arg( 0 );
-	$db = ( $num_args == 1 ) ? $GLOBALS[ 'mysql_db' ] : func_get_arg( 1 );
-	$last_id = 0;	
+    } catch (PDOException $e) {
+        echo "<pre>";
+        echo "Query: [$query]\n";
+        echo $e->getMessage();
+        echo "\n";
+        echo $e->getTraceAsString();
+        echo "</pre>";
+    }
 
-	$debug = $GLOBALS[ 'gDebug' ];
-	$support = $GLOBALS['mysql_admin'];
-	
-	if( $debug ) $dmsg = "&nbsp;&nbsp;&nbsp;&nbsp;DoQuery: $query";
-	
-	$result = mysql_query( $query, $db );
-	if( mysql_errno( $db ) != 0 )
-	{
-		if( ! $db ) { echo "  query: $query<br>\n"; }
-		echo "  result: " . mysql_error( $db ) . "<br>\n";
-		echo "I'm sorry but something unexpected occurred.  Please send all details<br>";
-		echo "of what you were doing and any error messages to $support<br>";
-	}
-	else
-	{
-		if( preg_match( "/^select/i", $query ) )
-		{
-			$numrows = mysql_num_rows( $result );
-		}
-		elseif( preg_match( "/^insert/i", $query ) )
-		{
-			$numrows = mysql_affected_rows( $db );
-			$last_id = mysql_insert_id();
-		}
-		else
-		{
-			$numrows = mysql_affected_rows( $db );
-		}
-		if( $debug ) $dmsg .= sprintf( ", # rows: %d", $numrows );
-	}
-	
- 	if( $debug ) Logger( $dmsg );
- 
-	$GLOBALS[ 'mysql_last_id' ] = $last_id;
-	$GLOBALS[ 'mysql_numrows' ] = $numrows;
-	$GLOBALS[ 'mysql_result' ] = $result;
+    $force = 0;
+    if ($force || $debug ) {
+        $tmp = [];
+        $tmp[] = "DoQuery: [$query]" . sprintf(", # rows: %d", $num);
+
+        if (!empty($args)) {
+            $i = 0;
+            foreach ($args as $key => $val) {
+                $tmp[] = sprintf("arg %d: %s => %s", $i++, $key, $val);
+            }
+        }
+        Logger($tmp);
+    }
+    return $stmt;
 }
-?>
