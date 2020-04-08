@@ -491,8 +491,6 @@ function UserManagerForgot() {
         Logger();
     }
 
-    global $gMailAdmin, $gMailLive;
-
     $area = $_POST['area'];
     $error = array();
 
@@ -541,14 +539,14 @@ function UserManagerForgot() {
             $mail = MyMailerNew();
             try {
                 //Receipients
-                $mail->setFrom($gMailAdmin[0], $gMailAdmin[1]);
-                if ($gMailLive) {
+                $mail->setFrom($GLOBALS['gMailAdmin']['email'], $GLOBALS['gMailAdmin']['name']);
+                if ($GLOBALS['gTestModeEnabled']) {
+                    $mail->addAddress($GLOBALS['gMailAdmin']['email'], $GLOBALS['gMailAdmin']['name']);
+                } else {
                     foreach ($recipients as $email => $name) {
                         $mail->addAddress($email, $name);
                     }
-                    $mail->AddCC($gMailAdmin[0], $gMailAdmin[1]);
-                } else {
-                    $mail->addAddress($gMailAdmin[0], $gMailAdmin[1]);
+                    $mail->AddCC($GLOBALS['gMailAdmin']['email'], $GLOBALS['gMailAdmin']['name']);
                 }
                 //Attachments
                 $mail->AddEmbeddedImage($GLOBALS['gMailSignatureImage'], 'sigimg', $GLOBALS['gMailSignatureImage']);
@@ -612,8 +610,9 @@ function UserManagerForgot() {
         $acts = array();
         $acts[] = "setValue('area','check')";
         $acts[] = "setValue('id', '" . $GLOBALS['gUserId'] . "')";
-        $acts[] = "addAction('start')";
-        echo sprintf("<input type=button onClick=\"%s\" id=update value='Send Reset Link' class=\"btn btn-primary btn-block btn-lg\" tabindex=\"2\">", join(';', $acts));
+        $acts[] = "addAction('forgot')";
+        echo sprintf("<input type=button onClick=\"%s\" id=update value='Send Reset Link'"
+                . " class=\"btn btn-primary btn-block btn-lg\" tabindex=\"2\">", join(';', $acts));
         echo "
                                             </div>
                                         </div>
@@ -773,7 +772,6 @@ function UserManagerNew() {
         $GLOBALS['gFunction'][] = __FUNCTION__;
         Logger();
     }
-    global $gMailAdmin, $gMailAdminName, $gMailLive;
 
     $user = $GLOBALS['user'];
     $area = filter_input(INPUT_POST, 'area');
@@ -871,14 +869,14 @@ function UserManagerNew() {
             $mail = MyMailerNew();
             try {
                 //Receipients
-                $mail->setFrom($gMailAdmin, $gMailAdminName);
-                if ($gMailLive) {
+                $mail->setFrom($GLOBALS['gMailAdmin']['email'], $GLOBALS['gMailAdmin']['name']);
+                if ($GLOBALS['gTestModeEnabled']) {
+                    $mail->addAddress($GLOBALS['gMailAdmin']['email'], $GLOBALS['gMailAdmin']['name']);
+                } else {
                     foreach ($recipients as $email => $name) {
                         $mail->addAddress($email, $name);
                     }
-                    $mail->AddCC($gMailAdmin, $gMailAdminName);
-                } else {
-                    $mail->addAddress($gMailAdmin, $gMailAdminName);
+                    $mail->AddCC($GLOBALS['gMailAdmin']['email'], $GLOBALS['gMailAdmin']['name']);
                 }
                 //Attachments
                 $mail->AddEmbeddedImage($GLOBALS['gMailSignatureImage'], 'sigimg', $GLOBALS['gMailSignatureImage']);
