@@ -86,7 +86,7 @@ function createDebugWindow(tag = 'xx') {
     debugWindow = window.open(
             "",
             "Debug",
-            "left=0,top=0,width=500,height=700,scrollbars=yes,status=yes,resizable=yes"
+            "left=0,top=0,width=900,height=700,scrollbars=yes,status=yes,resizable=yes"
             );
 
 

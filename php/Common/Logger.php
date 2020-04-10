@@ -8,18 +8,24 @@ function Logger() {
     $gDebugWindow = $GLOBALS['gDebugWindow'];
     $gDebugHTML = $GLOBALS['gDebugHTML'];
     
-    $prefix = join('>', $GLOBALS['gFunction'] );
+//    $prefix = join('>', $GLOBALS['gFunction'] );
     
     $show_traceback = 0;
     
     $e = new Exception();
     $trace = $e->getTrace();
     $depth = count($trace);
-
-//    $prefix .= sprintf( ">%s(%d)", $x[$depth-1]['function'], $x[$depth-2]['line'] );
-    if( $depth >= 2 ) {
-        $prefix .= sprintf( "(%d)", $trace[$depth-2]['line'] );
+    
+    $stack = [];
+    
+    for( $i = $depth-1; $i>=1; $i--) {
+        $stack[] = sprintf("%s(%d)", $trace[$i]['function'], $trace[$i-1]['line']);
     }
+    $prefix = implode("->", $stack );
+//    $prefix .= sprintf( ">%s(%d)", $x[$depth-1]['function'], $x[$depth-2]['line'] );
+//    if( $depth >= 2 ) {
+//        $prefix .= sprintf( "(%d)", $trace[$depth-2]['line'] );
+//    }
     $strace = $vfn = $vln = array();
  
     if( $show_traceback ) {

@@ -1,12 +1,5 @@
 <?php
 
-global $mail_admin;
-global $mail_enabled;
-global $mail_from;
-global $mail_live;
-global $mail_servers;
-global $mail_transport;
-
 function MyMail($message) {
     $trace = $GLOBALS['gTrace'];
     if ($trace) {
@@ -18,13 +11,6 @@ function MyMail($message) {
     static $mailer;
     static $logger;
 
-    if (empty($GLOBALS['mail_enabled'])) {
-        echo "** Mail service for this application is not enabled, please use \$mail_enabled in your local settings<br>";
-        exit;
-    }
-    if (empty($GLOBALS['mail_admin'])) {
-        echo "** Mail administrator required, please use \$mail_admin in your local settings<br>";
-    }
     if (empty($ms)) {
         if (count($GLOBALS['mail_servers']) == 0) {
             echo "** no Mail Servers defined, please use \$mail_servers in your local settings<br>";
@@ -72,15 +58,15 @@ function MyMail($message) {
 #		echo $logger->dump();
     }
 
-    if (!$GLOBALS['mail_live']) {
-        $message->setTo(['andy.elster@gmail.com','Andy Elster']);
+    if( $GLOBALS['gTestModeEnabled']) {
+        foreach( $GLOBALS['gMailTesting'] as $mail ) {
+            $message->setTo($mail);
+        }
         $message->setCc(array());
         $message->setBcc(array());
     }
 
-    if (!empty($GLOBALS['mail_from'])) {
-        $message->setFrom($GLOBALS['mail_from']);
-    }
+    $message->setFrom($GLOBALS['gMailAdmin']);
 
     $result = $mailer->send($message, $failures);
 

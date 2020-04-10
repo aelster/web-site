@@ -158,7 +158,7 @@ function MyDebug() {
         $fld = 'DebugWindow';
 
         echo "<tr>";
-        echo "  <td>Window</td>";
+        echo "  <td>New Window</td>";
 
         $jsx = array();
         $jsx[] = "setValue('from','MyDebug')";
@@ -191,7 +191,7 @@ function MyDebug() {
         $fld = 'DebugHTML';
 
         echo "<tr>";
-        echo "  <td>HTML</td>";
+        echo "  <td>Inline HTML</td>";
 
         $jsx = array();
         $jsx[] = "setValue('from','MyDebug')";
