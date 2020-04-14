@@ -663,7 +663,7 @@ function UserManagerLoad($userid) {
         Logger();
     }
 
-    $stmt = DoQuery('SELECT * from users where userid = :uid', array(':uid' => $userid));
+    $stmt = DoQuery('SELECT * from users where userid = :uid', [':uid' => $userid]);
     $row = $stmt->fetch(PDO::FETCH_ASSOC);
     $GLOBALS['gUserId'] = $userid;
     $GLOBALS['gNameFirst'] = $row['first'];
@@ -1846,7 +1846,7 @@ function UserManagerVerify() {
             $GLOBALS['gUserName'] = $username;
             UserManager('load', $_SESSION['userid']);
         } elseif (isset($_SESSION['disabled']) && $_SESSION['disabled']) {
-            $str = "Your account is currently disabled, please contact " . SITEEMAIL;
+            $str = "Your account is currently disabled, please contact " . $GLOBALS['gMailAdmin']['email'];
             Logger($str);
             $gError[] = $str;
             $GLOBALS['gAction'] = 'start';

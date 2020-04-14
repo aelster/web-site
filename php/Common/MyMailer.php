@@ -1,6 +1,7 @@
 <?php
 
 use PHPMailer\PHPMailer\PHPMailer;
+use PHPMailer\PHPMailer\SMTP;
 use PHPMailer\PHPMailer\Exception;
 
 function MyMailerNew() {
@@ -9,10 +10,65 @@ function MyMailerNew() {
         Logger();
     }
 
-    $mail = new PHPMailer(TRUE);
+    $mail = new PHPMailer(true);
 
-    require 'local_mailer.php';
-
+    foreach( $GLOBALS['gMailServer'] as $key => $val ) {
+        switch ($key) {
+            case 'Label': // noop, display purposes only
+                break;
+            
+            case 'Host':
+                $mail->Host = $val;
+                break;
+            
+            case 'SMTPAuth':
+                $mail->SMTPAuth = $val;
+                break;
+            
+            case 'Username':
+                $mail->Username = $val;
+                break;
+            
+            case 'Password':
+                $mail->Password = $val;
+                break;
+            
+            case 'isSMTP':
+                if( $val ) {
+                    $mail->isSMTP();
+                }
+                break;
+                
+            case 'isHTML':
+                if( $val ) {
+                    $mail->isHTML();
+                }
+                break;
+                
+            case 'debug':
+                if( $val ) {
+                    $mail->SMTPDebug = SMTP::DEBUG_SERVER;
+                }
+                break;
+            
+            case 'protocol':
+                if( $val == "tls" ) {
+                    $mail->SMTPSecure = PHPMailer::ENCRYPTION_STARTTLS;
+                    $mail->Port = 587;
+                } elseif( $val == "ssl" ) {
+                    $mail->SMTPSecure = PHPMailer::ENCRYPTION_SMTPS;
+                    $mail->Port = 465;                    
+                }
+                break;
+                
+            default:
+                $str = "Invalid Mail Server option [$key]. Aborting ...";
+                error_log($str);
+                Logger($str);
+                echo "$str<br>";
+                exit;
+        }                
+    }
     if ($GLOBALS['gTrace'])
         array_pop($GLOBALS['gFunction']);
 

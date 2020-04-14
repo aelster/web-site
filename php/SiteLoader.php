@@ -1,6 +1,6 @@
 <?php
 
-$path = dirname(__FILE__) . '/Common/globals.php';
+$path = dirname(__FILE__) . 'php/Common/globals.php';
 if (file_exists($path)) {
     require $path;
 }

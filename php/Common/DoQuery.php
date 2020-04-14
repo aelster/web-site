@@ -43,7 +43,8 @@ function DoQuery($query) {
         if (!empty($args)) {
             $i = 0;
             foreach ($args as $key => $val) {
-                $tmp[] = sprintf("arg %d: %s => %s", $i++, $key, $val);
+                $v2 = ( strlen($val) < 100 ) ? $val : "blob";
+                $tmp[] = sprintf("arg %d: %s => %s", $i++, $key, $v2);
             }
         }
         Logger($tmp);

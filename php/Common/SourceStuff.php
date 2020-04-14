@@ -274,7 +274,7 @@ function SourceDisplaySub($dir, &$hiddenDivs) {
 
     $hdx = count($hiddenDivs) + 1;
     $text = array();
-    $text[] = "<div class='sourcestuffdetail hidden' id=hidden$hdx onmouseout=\"showHideDiv(event,$hdx);\">";
+    $text[] = "<div class='sourcestuffdetail hidden' id=hidden$hdx onclick=\"showHideDiv(event,$hdx);\">";
     $text[] = "<h2>$cap</h2>";
     $num_files = 0;
 
@@ -353,8 +353,8 @@ function SourceDisplaySub($dir, &$hiddenDivs) {
     echo "<td  style='text-align: center;'>$num_files</td>";
     $tag = dechex($hsum);
     $jsx = [];
-    $jsx[] = "onmouseenter=\"showHideDiv(event,$hdx)\"";
-    $jsx[] = "onmouseout=\"showHideDiv(event,$hdx)\"";
+    $jsx[] = "onclick=\"showHideDiv(event,$hdx)\"";
+//    $jsx[] = "onmouseout=\"showHideDiv(event,$hdx)\"";
     $js = join(';', $jsx);
     echo "<td style='text-align: center;' $js><a href='#top'>$tag</a></td>";
     echo "</tr>";
