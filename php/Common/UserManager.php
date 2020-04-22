@@ -493,6 +493,7 @@ function UserManagerForgot() {
 
     $area = $_POST['area'];
     $error = array();
+    $admin = $GLOBALS['gMailAdmin'][0];
 
     if ($area == 'check') {
 #        if (isset($_POST['submit'])) {
@@ -539,14 +540,14 @@ function UserManagerForgot() {
             $mail = MyMailerNew();
             try {
                 //Receipients
-                $mail->setFrom($GLOBALS['gMailAdmin']['email'], $GLOBALS['gMailAdmin']['name']);
+                $mail->setFrom($admin['email'], $admin['name']);
                 if ($GLOBALS['gTestModeEnabled']) {
-                    $mail->addAddress($GLOBALS['gMailAdmin']['email'], $GLOBALS['gMailAdmin']['name']);
+                    $mail->addAddress($admin['email'], $admin['name']);
                 } else {
                     foreach ($recipients as $email => $name) {
                         $mail->addAddress($email, $name);
                     }
-                    $mail->AddCC($GLOBALS['gMailAdmin']['email'], $GLOBALS['gMailAdmin']['name']);
+                    $mail->AddCC($admin['email'], $admin['name']);
                 }
                 //Attachments
                 $mail->AddEmbeddedImage($GLOBALS['gMailSignatureImage'], 'sigimg', $GLOBALS['gMailSignatureImage']);
@@ -758,9 +759,6 @@ function UserManagerLogin() {
             </div>
         </div>
     </div>
-
-
-
     </div>
     <?php
     if ($GLOBALS['gTrace'])
@@ -774,6 +772,7 @@ function UserManagerNew() {
     }
 
     $user = $GLOBALS['user'];
+    $admin = $GLOBALS['gMailAdmin'][0];
     $area = filter_input(INPUT_POST, 'area');
     if ($area == 'verify') {
         if (!isset($_POST['username']))
@@ -869,14 +868,14 @@ function UserManagerNew() {
             $mail = MyMailerNew();
             try {
                 //Receipients
-                $mail->setFrom($GLOBALS['gMailAdmin']['email'], $GLOBALS['gMailAdmin']['name']);
+                $mail->setFrom($admin['email'], $admin['name']);
                 if ($GLOBALS['gTestModeEnabled']) {
-                    $mail->addAddress($GLOBALS['gMailAdmin']['email'], $GLOBALS['gMailAdmin']['name']);
+                    $mail->addAddress($admin['email'], $admin['name']);
                 } else {
                     foreach ($recipients as $email => $name) {
                         $mail->addAddress($email, $name);
                     }
-                    $mail->AddCC($GLOBALS['gMailAdmin']['email'], $GLOBALS['gMailAdmin']['name']);
+                    $mail->AddCC($admin['email'], $admin['name']);
                 }
                 //Attachments
                 $mail->AddEmbeddedImage($GLOBALS['gMailSignatureImage'], 'sigimg', $GLOBALS['gMailSignatureImage']);
@@ -1846,7 +1845,7 @@ function UserManagerVerify() {
             $GLOBALS['gUserName'] = $username;
             UserManager('load', $_SESSION['userid']);
         } elseif (isset($_SESSION['disabled']) && $_SESSION['disabled']) {
-            $str = "Your account is currently disabled, please contact " . $GLOBALS['gMailAdmin']['email'];
+            $str = "Your account is currently disabled, please contact " . $admin['email'];
             Logger($str);
             $gError[] = $str;
             $GLOBALS['gAction'] = 'start';
