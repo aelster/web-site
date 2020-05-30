@@ -18,6 +18,7 @@ $SourceStuff_FilesRegex = [
     '/^\.\./',
     '/^_/',
     '/^local/',
+    '/^#.*#$/',
     '/^AA/',
     '/^phpMyAdmin/',
     '/^andyMyAdmin/',
