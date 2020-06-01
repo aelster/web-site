@@ -148,7 +148,7 @@ function UserManagerAdd() {
         $query = join(",", $text);
         DoQuery($query);
 
-        $query = "insert into access set userid = '$id', privid = '" . $_POST['access'] . "'";
+        $query = "insert into access set id = '$id', privid = '" . $_POST['access'] . "'";
         DoQuery($query);
     }
 
@@ -220,7 +220,7 @@ function UserManagerDelete() {
     $query = join(",", $text);
     DoQuery($query);
 
-    DoQuery("delete from access where userid = '$id'");
+    DoQuery("delete from access where id = '$id'");
     DoQuery("delete from grades where userid = '$id'");
 
     if ($GLOBALS['gTrace'])
@@ -269,7 +269,7 @@ function UserManagerDisplay() {
         $divOpened = 0;
 
         $query = "select * from users, access where";
-        $query .= " users.userid = access.userid and access.privid = :pid order by users.username ASC";
+        $query .= " users.userid = access.id and access.privid = :pid order by users.username ASC";
         $stmt = DoQuery($query, array(':pid' => $level));
         if ($stmt->rowCount() > 0) {
             $divOpened = 1;
@@ -313,7 +313,7 @@ function UserManagerDisplay() {
             $jscript = "onChange=\"addField('u_{$id}_email');toggleBgRed('update');\"";
             printf("  <td><input type=text name=u_%d_email value=\"%s\" $jscript size=25></td>\n", $id, $usr['email']);
 
-            $jscript = "onChange=\"addField('u_{$id}_privid');toggleBgRed('update');\"";
+            $jscript = "onChange=\"setValue('area','users');setValue('mode','control');setValue('func','update');addField('u_{$id}_privid');addAction('update');\"";
             printf("  <td><select name=u_%d_privid $jscript>", $id);
             foreach ($vprivs as $name => $privid) {
                 if ($vlevels[$name] > $GLOBALS['gAccessLevel'])
@@ -336,9 +336,17 @@ function UserManagerDisplay() {
             }
             echo "  <td align=center>$str</td>\n";
 
-            $checked = $usr['disabled'] ? "checked" : "";
-            $jscript = "onChange=\"addField('u_{$id}_disabled');toggleBgRed('update');\"";
-            printf("  <td style='text-align: center;'><input type=checkbox name=u_%d_disabled value=1 $checked $jscript ></td>\n", $id);
+            echo "<td style=\"text-align: center;\">";
+            if( $usr['disabled'] ) {
+                $checked = "checked";
+                $val = 0;
+            } else {
+                $checked = "";
+                $val = 1;
+            }
+            $jscript = "onChange=\"setValue('area','users');setValue('mode','control');setValue('func','update');addField('u_{$id}_disabled');addAction('update');\"";
+            echo "<input type=checkbox name=u_{$id}_disabled value=$val $checked $jscript >";
+            echo "</td>\n";
 
             echo "  <td>";
             $acts = array();
@@ -383,16 +391,15 @@ function UserManagerDisplay() {
 
         echo "<tbody>";
         $id = 0;
-        $jscript = "onChange=\"addField('$id');toggleBgRed('update');\"";
 
         echo "<tr>\n";
-        printf("  <td>$id</td>\n");
-        printf("  <td><input type=text name=u_%d_username value=\"%s\" $jscript size=10></td>\n", $id, $usr['username']);
-        printf("  <td><input type=text name=u_%d_first value=\"%s\" $jscript size=10></td>\n", $id, $usr['first']);
-        printf("  <td><input type=text name=u_%d_last value=\"%s\" $jscript size=10></td>\n", $id, $usr['last']);
-        printf("  <td><input type=text name=u_%d_email value=\"%s\" $jscript size=25></td>\n", $id, $usr['email']);
+        printf("  <td></td>\n");
+        printf("  <td><input type=text name=u_%d_username value=\"%s\" size=10></td>\n", $id, $usr['username']);
+        printf("  <td><input type=text name=u_%d_first value=\"%s\" size=10></td>\n", $id, $usr['first']);
+        printf("  <td><input type=text name=u_%d_last value=\"%s\" size=10></td>\n", $id, $usr['last']);
+        printf("  <td><input type=text name=u_%d_email value=\"%s\" size=25></td>\n", $id, $usr['email']);
 
-        printf("  <td><select name=u_%d_privid $jscript>", $id);
+        printf("  <td><select name=u_%d_privid>", $id);
         $defSet = 0;
         $defMax = 0;
         foreach ($vprivs as $name => $privid) {
@@ -410,21 +417,11 @@ function UserManagerDisplay() {
         }
         echo "</select></td>\n";
 
-        if ($usr['lastlogin'] == '0000-00-00 00:00:00')
-            $str = "never";
-        else {
-            $diff = time() - strtotime($usr['lastlogin']);
-            $days = $diff / 60 / 60 / 24;
-            if ($days >= 1) {
-                $str = sprintf("%d days ago", $days);
-            } else {
-                $str = $usr['lastlogin'];
-            }
-        }
+        $str = "n/a";
         echo "  <td align=center>$str</td>\n";
 
         $checked = $usr['disabled'] ? "checked" : "";
-        printf("  <td style='text-align: center;'><input type=checkbox name=u_%d_disabled value=1 $checked $jscript ></td>\n", $id);
+        printf("  <td style='text-align: center;'><input type=checkbox name=u_%d_disabled value=1 $checked></td>\n", $id);
 
         echo "  <td>";
         $acts = array();
@@ -677,7 +674,7 @@ function UserManagerLoad($userid) {
     $GLOBALS['gDebug'] = $GLOBALS['gTrace'] = $row['debug'];
 
     $query = 'select privileges.level, privileges.enabled from privileges, access';
-    $query .= ' where access.privid = privileges.id and access.userid = :uid';
+    $query .= ' where access.privid = privileges.id and access.id = :uid';
     $stmt2 = DoQuery($query, array(':uid' => $userid));
     list( $level, $enabled ) = $stmt2->fetch(PDO::FETCH_NUM);
     $GLOBALS['gAccessLevel'] = $level;
@@ -853,7 +850,7 @@ function UserManagerNew() {
             list( $level ) = $stmt->fetch(PDO::FETCH_NUM);
             $stmt = DoQuery('select id from privileges where level = :level', [':level' => $level]);
             list( $pid ) = $stmt->fetch(PDO::FETCH_NUM);
-            DoQuery('insert into access set UserId = :uid, PrivId = :pid', [':uid' => $id, ':pid' => $pid]);
+            DoQuery('insert into access set id = :uid, PrivId = :pid', [':uid' => $id, ':pid' => $pid]);
 
             $subject = "Registration Confirmation for " . $GLOBALS['gTitle'];
             $recipients[$email] = $firstName . " " . $lastName;
@@ -1605,7 +1602,7 @@ function UserManagerUpdate() {
         $query = join(',', $text);
         DoQuery($query);
 
-        DoQuery("delete from access where userid = '$id'");
+        DoQuery("delete from access where id = '$id'");
 
         DoQuery("show tables like 'grades'");
         if ($GLOBALS['gPDO_num_rows']) {
@@ -1695,98 +1692,57 @@ function UserManagerUpdate() {
 
     if ($area == "users") {
         if ($func == "add") {
-            $done = array();
-            $v = preg_split('/,/', $_POST['fields'], NULL, PREG_SPLIT_NO_EMPTY);
-            $uids = array_unique($v);
-            foreach ($uids as $uid) {
-                if (array_key_exists($uid, $done))
-                    continue;
-                $done[$uid] = 1;
-                $query = "select * from users where userid = :uid";
-                $stmt = DoQuery($query, array(':uid' => $uid));
-                $user = $stmt->fetch(PDO::FETCH_ASSOC);
+            $stmt = DoQuery( "select max(userid)+1 from users" );
+            list($uid) = $stmt->fetch(PDO::FETCH_NUM);
+            
+            $i = 0;
+            $fields = $vals = [];
+            
+            $i++;
+            $fields[] = "userid = :v$i";
+            $vals[":v$i"] = $uid;
+            
+            $i++;
+            $fields[] = "username = :v$i";
+            $vals[":v$i"] = $_POST["u_0_username"];;
+            
+            $i++;
+            $fields[] = "first = :v$i";
+            $vals[":v$i"] = $_POST["u_0_first"];;
+            
+            $i++;
+            $fields[] = "last = :v$i";
+            $vals[":v$i"] = $_POST["u_0_last"];;
+            
+            $i++;
+            $fields[] = "email = :v$i";
+            $vals[":v$i"] = $_POST["u_0_email"];
+            DoQuery( "insert into users set " . join(',', $fields), $vals );
+            
+            $i = 0;
+            $fields = $vals = [];
+            
+            $i++;
+            $fields[] = "id = :v$i";
+            $vals[":v$i"] = $uid;
+            
+            $i++;
+            $fields[] = "PrivId = :v$i";
+            $vals[":v$i"] = $_POST["u_0_privid"];
+            DoQuery( "insert into access set " . join(',', $fields), $vals );
 
-                $acts = array();
+            $event = [];
+            $event["type"] = "users";
+            $event["userid"] = $_SESSION['userid'];
+            $str = sprintf( "Created username <%s> for <%s %s>, email: <%s>",
+                    $_POST['u_0_username'], $_POST['u_0_first'], $_POST['u_0_last'], $_POST['u_0_email'] );
+            $event["item"] = $str;
+            EventLog('record',$event);
 
-                $tag = "u_${uid}_first";
-                if (strcmp($_POST[$tag], $user['first']))
-                    $acts[] = "first = '" . addslashes($_POST[$tag]) . "'";
-
-                $tag = "u_${uid}_last";
-                if (strcmp($_POST[$tag], $user['last']))
-                    $acts[] = "last = '" . addslashes($_POST[$tag]) . "'";
-
-                $tag = "u_${uid}_username";
-                if (strcmp($_POST[$tag], $user['username']))
-                    $acts[] = "username = '" . addslashes($_POST[$tag]) . "'";
-
-                $tag = "u_${uid}_email";
-                if (strcmp($_POST[$tag], $user['email']))
-                    $acts[] = "email = '" . addslashes($_POST[$tag]) . "'";
-
-                $tag = "u_${uid}_disabled";
-                $val = isset($_POST[$tag]) ? 1 : 0;
-                if ($val != $user['disabled'])
-                    $acts[] = "disabled = '${val}'";
-
-                logger("  # of actions: " . count($acts));
-                logger("  acts: " . print_r($acts, true));
-                if (count($acts)) {
-                    $query = "update users set " . join(',', $acts) . " where userid = '$uid'";
-                    logger("  query: [$query]");
-                    DoQuery($query);
-                    if ($GLOBALS['gPDO_num_rows'] == 0) {
-                        $acts = array();
-                        foreach (array('first', 'last', 'email', 'username') as $fld) {
-                            $tag = sprintf("u_%d_%s", $uid, $fld);
-                            $acts[] = sprintf("%s = '%s'", $fld, addslashes($_POST[$tag]));
-                        }
-                        $acts[] = sprintf("password = '%s'", md5(sprintf("%d", time())));
-
-                        $query = "insert into users set " . join(',', $acts);
-                        DoQuery($query);
-
-                        $tag = sprintf("u_%d_%s", $uid, 'privid');
-                        $acc = $_POST[$tag];
-                        $uid = $GLOBALS['gPDO_lastInsertID'];
-                        $acts = array();
-                        $acts[] = "userid = '$uid'";
-                        $acts[] = "privid = '$acc'";
-                        $query = "insert into access set " . join(',', $acts);
-                        DoQuery($query);
-                    }
-
-                    $text = array();
-                    $text[] = "insert event_log set time=now()";
-                    $text[] = "type = 'user'";
-                    $text[] = "userid = '$uid'";
-                    $text[] = sprintf("item = 'update %s(%d), set %s'", $user['username'], $uid, addslashes(join(',', $acts)));
-                    $query = join(',', $text);
-                    DoQuery($query);
-                }
-
-                $query = "select * from access where userid = '$uid'";
-                $stmt = DoQuery($query);
-                $access = $stmt->fetch(PDO::FETCH_ASSOC);
-
-                $tag = "u_${uid}_privid";
-                if ($access['PrivId'] !== $_POST[$tag]) {
-                    $query = sprintf("update access set privid = '%s' where userid = '%s'", $_POST[$tag], $uid);
-                    DoQuery($query);
-
-                    $text = array();
-                    $text[] = "insert event_log set time=now()";
-                    $text[] = "type = 'user'";
-                    $text[] = "userid = '$uid'";
-                    $text[] = sprintf("item = 'update %s(%d), set privid = %s'", $user['username'], $uid, $_POST[$tag]);
-                    $query = join(',', $text);
-                    DoQuery($query);
-                }
-            }
         } elseif ($func == "delete") {
             $uid = $_POST['id'];
             DoQuery("delete from users where userid = $uid");
-            DoQuery("delete from access where Userid = $uid");
+            DoQuery("delete from access where id = $uid");
             $text = array();
             $text[] = "insert event_log set time=now()";
             $text[] = "type = 'user'";
@@ -1800,10 +1756,11 @@ function UserManagerUpdate() {
             foreach( $updates as $str ) {
                 list( $u, $id, $field ) = explode("_",$str);
                 logger("str: [$str]" );
+                $val = (array_key_exists($str,$_POST)) ? $_POST[$str] : 0;
                 if( $field == 'privid' ) {
-                    DoQuery( "update access set $field = :v1 where userid = $id", [":v1" => $_POST["$str"]]);
+                    DoQuery( "update access set $field = :v1 where id = $id", [":v1" => $val]);
                 } else {
-                    DoQuery( "update users set $field = :v1 where userid = $id", [":v1" => $_POST["$str"]]);
+                    DoQuery( "update users set $field = :v1 where userid = $id", [":v1" => $val]);
                 }
             }
             
