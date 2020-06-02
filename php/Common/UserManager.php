@@ -522,7 +522,7 @@ function UserManagerForgot() {
                 ':token' => $storedToken
             ));
 
-            $subject = "Password Reset for " . $GLOBALS['gTitle'];
+            $subject = "Password Reset for " . $row['username'];
             $recipients[$row['email']] = $row['first'] . " " . $row['last'];
 
             $body = sprintf("<img src=\"cid:sigimg\" width='%d' height='%d'/>", $GLOBALS['gMailSignatureImageSize']['width'], $GLOBALS['gMailSignatureImageSize']['height']);
@@ -538,13 +538,14 @@ function UserManagerForgot() {
             try {
                 //Receipients
                 $mail->setFrom($admin['email'], $admin['name']);
+
+                
                 if ($GLOBALS['gTestModeEnabled']) {
                     $mail->addAddress($admin['email'], $admin['name']);
                 } else {
                     foreach ($recipients as $email => $name) {
                         $mail->addAddress($email, $name);
                     }
-                    $mail->AddCC($admin['email'], $admin['name']);
                 }
                 //Attachments
                 $mail->AddEmbeddedImage($GLOBALS['gMailSignatureImage'], 'sigimg', $GLOBALS['gMailSignatureImage']);
