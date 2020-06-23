@@ -145,10 +145,6 @@ function SourceDisplay() {
     $tmp = DirTree($path, 0);
     sort($tmp);
     foreach ($tmp as $dir) {
-        if (preg_match('/Templates/', $dir))
-            continue;
-        if (preg_match('/tmp/', $dir))
-            continue;
         SourceDisplaySub($dir, $hiddenDivs);
     }
 
