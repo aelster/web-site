@@ -96,20 +96,22 @@ function EventLogDisplay() {
     foreach( $tmp as $day ) {
         $col = 0;
         echo "<tr>";
-        $height = count($dates[$day] );
-        
-        $col++;
-        echo "<td class='col$col c' rowspan=$height>$day<br>($height)</td>";
         
         $entries = [];
         foreach( $dates[$day] as $entry ) {
             $entries[$entry['time']] = $entry;
         }
         
+        $height = count($entries);
+        
+        $col++;
+        echo "<td class='col$col c' rowspan=$height>$day<br>($height)</td>";
+        
+        
         $tmp = array_reverse($entries);
         foreach( $tmp as $entry ) {
             $col++;
-            echo "<td class=col$col>" . $entry['time'] . "</td>";
+            echo "<td class='col$col nw'>" . $entry['time'] . "</td>";
             $col++;
             $name = array_key_exists( $entry['userid'], $GLOBALS['gUsers'] ) ? $GLOBALS['gUsers'][$entry['userid']] : "unk";
             echo "<td class='col$col c'>$name</td>";
