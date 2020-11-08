@@ -295,8 +295,10 @@ function UserManagerDisplay() {
         }
         echo "<tbody>";
         $j = 1;
+        $last_usr = [];
         while ($usr = $stmt->fetch(PDO::FETCH_ASSOC)) {
             $id = $usr['userid'];
+            $last_usr = $usr;
 
             echo "<tr>\n";
             printf("  <td>$id</td>\n");
@@ -370,6 +372,10 @@ function UserManagerDisplay() {
     }
 
     if (UserManagerAuthorized('control')) {
+        $id = 0;
+        foreach( $last_usr as $key => $val ) {
+            $usr[$key] = "";
+        }
         echo "<div class=center>";
         echo "<h3>New Users</h3>";
 
@@ -390,7 +396,6 @@ function UserManagerDisplay() {
         echo "</thead>";
 
         echo "<tbody>";
-        $id = 0;
 
         echo "<tr>\n";
         printf("  <td></td>\n");
@@ -939,7 +944,7 @@ function UserManagerNew() {
         $GLOBALS['gFunction'][] = __FUNCTION__;
         Logger();
     }
-
+    
     $user = $GLOBALS['user'];
     $admin = $GLOBALS['gMailAdmin'][0];
     $area = filter_input(INPUT_POST, 'area');
@@ -1433,13 +1438,13 @@ function UserManagerReset() {
         $GLOBALS['gFunction'][] = __FUNCTION__;
         Logger();
     }
-    error_log('in reset');
+
 //if logged in redirect to members page
-    if ($GLOBALS['user']->is_logged_in()) {
-        error_log('is_logged_in');
+    $user = (array_key_exists("user", $GLOBALS ) ) ? $GLOBALS["user"] : "";
+    if( $user && $user->is_logged_in()) {
         return;
     }
-    error_log('not logged in');
+
     if (empty($GLOBALS['gResetKey'])) {
         $GLOBALS['gResetKey'] = $_POST['key'];
     }
@@ -1501,7 +1506,7 @@ function UserManagerReset() {
                 $error[] = $e->getMessage();
             }
         }
-    }
+    }   
     ?>
 
     <div class="container center">

@@ -67,6 +67,7 @@ function Logger() {
         
     if ($gDebug & $gDebugInLine) {
         $indent = "&nbsp;&nbsp;";
+        $indent = "";
         $eol = "<br>";
         echo "<div align=left>";
         echo $prefix . $eol;

@@ -30,11 +30,14 @@ Class Password {
             trigger_error("password_hash(): Password must be a string", E_USER_WARNING);
             return null;
         }
+/*
         if (!is_int($algo)) {
             trigger_error("password_hash() expects parameter 2 to be long, " . gettype($algo) . " given", E_USER_WARNING);
             return null;
         }
-        switch ($algo) {
+*/
+          switch ($algo) {
+
             case PASSWORD_BCRYPT :
                 // Note that this is a C constant, but not exposed to PHP, so we don't define it here.
                 $cost = 10;
