@@ -7,7 +7,7 @@ function UserManager() {
     }
 
     $save_db = $GLOBALS['gDb'];
-    $GLOBALS['gDb'] = $GLOBALS['gDatabases'][$GLOBALS['gDbControlId']];
+    $GLOBALS['gDb'] = $GLOBALS['gPDO'][$GLOBALS['gDbControlId']]['inst'];
 
     $fn = func_get_arg(0);
 
@@ -295,7 +295,6 @@ function UserManagerDisplay() {
         }
         echo "<tbody>";
         $j = 1;
-        $last_usr = [];
         while ($usr = $stmt->fetch(PDO::FETCH_ASSOC)) {
             $id = $usr['userid'];
             $last_usr = $usr;
@@ -624,7 +623,7 @@ function UserManagerForgot() {
                     $js = sprintf("onclick=\"%s\"", join(';', $jsx));
 
                     echo "
-        &nbsp;<input type=button name=action value=\"Start Over\" label=start $js>
+        &nbsp;<div class='form-group'><input type=button name=action value=\"Start Over\" label=start $js></div>
         </div>
         </div>
         ";
@@ -780,7 +779,7 @@ function UserManagerGetEmail() {
                     $js = sprintf("onclick=\"%s\"", join(';', $jsx));
 
                     echo "
-        &nbsp;<input type=button name=action value=\"Start Over\" label=start $js>
+        &nbsp;<div class=\"form-group\"><input type=button name=action value=\"Start Over\" label=start $js></div>
         </div>
         </div>
         ";
@@ -882,7 +881,7 @@ function UserManagerLogin() {
         <div class="row" style="margin-left: 25%; width:50%;">
             <div class="form-group">
                 <h2>Please Login</h2>
-                <input type=button <?php echo $js ?> class="form-control input-lg" value="Forgot your password?" style="height:40px;">
+                <input type=button <?php echo $js ?> class="form-control input-lg" value="Forgot your password?" >
                 <?php
                 //check for any errors
                 if (isset($GLOBALS['gError'])) {
@@ -910,7 +909,7 @@ function UserManagerLogin() {
             </div>
             <hr>
             <div class="form-group">
-                <input type="text" name="username" id="username" class="form-control input-lg" placeholder="User Name" 
+                <input type="text" name="username" id="username" class="form-control input-lg" placeholder="User Name/Phone" 
                        value="<?php
                        if (isset($gError)) {
                            echo htmlspecialchars($_POST['username'], ENT_QUOTES);
@@ -929,7 +928,7 @@ function UserManagerLogin() {
 
             <hr>
             <div class="form-group">
-                <input type=button value="Login" <?php echo $js ?> class="btn btn-primary btn-block btn-lg" tabindex="5">
+                <input type=button value="Login" <?php echo $js ?> class="form-control input-lg" tabindex="5">
             </div>
         </div>
     </div>
@@ -1118,7 +1117,7 @@ function UserManagerNew() {
                         ?>
 
                         <div class="form-group">
-                            <input type="text" name="username" id="username" class="form-control input-lg" placeholder="User Name" value="<?php
+                            <input type="text" name="username" id="username" class="form-control input-lg" placeholder="User Name/Phone" value="<?php
                                    if (isset($error)) {
                                        echo htmlspecialchars($_POST['username'], ENT_QUOTES);
                                    }
@@ -1201,8 +1200,9 @@ function UserManagerLogout() {
     $jsx[] = "addAction('password')";
     $js = sprintf("onclick=\"%s\"", join(';', $jsx));
 
-    echo "
+    echo "<div class=\"form-group\">
     <input type=button name=action value=\"Start Over\" label=start $js>
+        </div>
     </div>
     </div>
     ";
@@ -2117,10 +2117,10 @@ function UserManagerWelcome() {
         $js = sprintf("onClick=\"%s\"", join(';', $jsx));
         ?>
         <div class=center>
-            <div class="row" style="margin-left: 25%; width:50%;">
+            <div class="row">
                 <div class="form-group">
                     <h2>Please Login</h2>
-                    <input type=button <?php echo $js ?> class="form-control input-lg" value="Reset your password?" style="height:40px;">
+                    <input type=button <?php echo $js ?> class="form-control input-lg" value="Reset your password?">
                     <?php
                 }
 
@@ -2133,8 +2133,9 @@ function UserManagerWelcome() {
                     $jsx[] = "addAction('password')";
                     $js = sprintf("onclick=\"%s\"", join(';', $jsx));
 
-                    echo "
+                    echo "<div class=\"form-group\">
         <input type=button name=action value=\"Start Over\" label=start $js>
+            </div>
         </div>
         </div>
         ";
@@ -2160,7 +2161,7 @@ function UserManagerWelcome() {
                 </div>
                 <hr>
                 <div class="form-group">
-                    <input type="text" name="username" id="username" class="form-control input-lg" placeholder="User Name" 
+                    <input type="text" name="username" id="username" class="form-control input-lg" placeholder="User Name/Phone" 
                            value="<?php
                            if (isset($gError)) {
                                echo htmlspecialchars($_POST['username'], ENT_QUOTES);
@@ -2179,7 +2180,7 @@ function UserManagerWelcome() {
 
                 <hr>
                 <div class="form-group">
-                    <input type=button value="Login" <?php echo $js ?> class="btn btn-primary btn-block btn-lg" tabindex="5">
+                    <input type=button value="Login" <?php echo $js ?> class="form-control input-lg" tabindex="5">
                 </div>
             </div>
         </div>

@@ -40,7 +40,7 @@ class User extends Password {
 
         $row = $this->get_user_hash($username);
 
-        if ($this->password_verify($password, $row['password']) == 1) {
+        if (! empty($row) && $this->password_verify($password, $row['password']) == 1) {
             $_SESSION['userid'] = $GLOBALS['gUserId'] = $row['userid'];
             $_SESSION['username'] = $row['username'];
             $_SESSION['disabled'] = $row['disabled'];

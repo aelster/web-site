@@ -1,28 +1,39 @@
 <?php
 
 function OpenDb(
-        $dsn = 'PDO data source',
-        $user = 'PDO user',
-        $pass = 'PDO password') {
-
-
+        $dsn = '', //PDO data source
+        $user = '', //PDO user
+        $pass = '' //PDO password
+    ) {
+/*
+ * Change the priority.
+ * 
+ *  1. If arguments are used, they take priority.
+ *  2. If argmenets are empty, try the global variables
+ *  3. If no argments and globals not set, fail
+ */
     if ($GLOBALS['gTrace']) {
         $GLOBALS['gFunction'][] = __FUNCTION__;
         Logger();
     }
 
-    if (strcmp($dsn, 'PDO data source') == 0) { // No DSN specified, default assigned
-        $dsn = !empty($GLOBALS['gPDO_dsn']) ? $GLOBALS['gPDO_dsn'] : $dsn; // Use the global value if present
+    if( empty( $dsn ) ) {
+        if( array_key_exists( 'gPDO_dsn', $GLOBALS ) ) {
+            $dsn = $GLOBALS['gPDO_dsn'];
+        }
     }
 
-    if (strcmp($user, 'PDO user') == 0) { // No USER specified, default assigned
-        $user = !empty($GLOBALS['gPDO_user']) ? $GLOBALS['gPDO_user'] : $user; // Use the global value if present
+    if( empty( $user ) ) {
+        if( array_key_exists( 'gPDO_user', $GLOBALS ) ) {
+            $user = $GLOBALS['gPDO_user'];
+        }
     }
 
-    if (strcmp($pass, 'PDO password') == 0) { // No PASSWORD specified, default assigned
-        $pass = !empty($GLOBALS['gPDO_pass']) ? $GLOBALS['gPDO_pass'] : $pass; // Use the global value if present
+    if( empty( $pass ) ) {
+        if( array_key_exists( 'gPDO_pass', $GLOBALS ) ) {
+            $pass = $GLOBALS['gPDO_pass'];
+        }
     }
-
 
     try {
         $attr = !empty($GLOBALS['gPDO_attr']) ? $GLOBALS['gPDO_attr'] : array();

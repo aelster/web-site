@@ -6,7 +6,7 @@ function SessionStuff($cmd) {
         Logger();
     }
     $save_db = $GLOBALS['gDb'];
-    $GLOBALS['gDb'] = $GLOBALS['gDatabases'][$GLOBALS['gDbControlId']];
+    $GLOBALS['gDb'] = $GLOBALS['gPDO'][$GLOBALS['gDbControlId']]['inst'];
 
     switch ($cmd) {
         case( 'start' ):

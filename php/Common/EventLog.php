@@ -72,7 +72,12 @@ function EventLogDisplay() {
         $dates[$day][] = $row;
     }
     
-//    $GLOBALS['gDb'] = $GLOBALS['gDatabases'][$_SESSION['dbId']];
+    $userNames = [];
+    $query = "select userid, username from users";
+    $stmt = DoQuery($query);
+    while( list( $id, $name ) = $stmt->fetch(PDO::FETCH_NUM) ) {
+        $userNames[$id] = $name;
+    }
   
     $tmp = array_reverse( array_keys( $dates ) );
     echo "<table class='scrollable sortable'>";
@@ -113,7 +118,7 @@ function EventLogDisplay() {
             $col++;
             echo "<td class='col$col nw'>" . $entry['time'] . "</td>";
             $col++;
-            $name = array_key_exists( $entry['userid'], $GLOBALS['gUsers'] ) ? $GLOBALS['gUsers'][$entry['userid']] : "unk";
+            $name = array_key_exists( $entry['userid'], $userNames ) ? $userNames[$entry['userid']] : "unk";
             echo "<td class='col$col c'>$name</td>";
             $col++;
             echo "<td class=col$col>" . $entry['item'] . "</td>";
