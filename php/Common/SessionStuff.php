@@ -11,13 +11,13 @@ function SessionStuff($cmd) {
     switch ($cmd) {
         case( 'start' ):
             session_start();
-            if (empty($_SESSION['userid'])) {
+            if (empty($_SESSION['user_id'])) {
                 if ($GLOBALS['gTrace'])
                     Logger("Starting new session");
             } else {
                 if ($GLOBALS['gTrace'])
                     Logger("Using existing session");
-                UserManager('load', $_SESSION['userid']);
+                UserManager('load', $_SESSION['user_id']);
             }
             break; 
 
@@ -43,16 +43,15 @@ function SessionStuff($cmd) {
 
         case( 'logout' ):
             unset($text);
-            $text[] = "insert event_log set time=now()";
-            $text[] = "type = 'logout'";
-            $text[] = sprintf("userid = '%d'", $GLOBALS['gUserId']);
-            $text[] = sprintf("item = 'session_id: %s'", session_id());
-            $query = join(",", $text);
-            DoQuery($query);
-            foreach (array('authenticated', 'userid', 'username') as $key) {
+            EventLog('record',[
+                'type' => 'logout',
+                'user_id' => $GLOBALS['gUserId'],
+                'item' => 'session_id: ' . session_id()
+                ]);
+            foreach (array_keys($_SESSION) as $key) {
                 unset($_SESSION[$key]);
             }
-            $_SESSION = array();
+            $_SESSION = [];
             unset($_COOKIE[session_name()]);
             if (isset($_COOKIE[session_name()])) {
                 setcookie(session_name(), '', time() - 42000, '/');

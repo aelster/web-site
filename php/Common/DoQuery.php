@@ -6,6 +6,22 @@ function DoQuery($query) {
     $num = 0;
     $stmt = NULL;
     $db = $GLOBALS['gDb'];
+    $tmp = [];
+    $numArgs = func_num_args();
+    $args = ( $numArgs > 1 ) ? func_get_arg(1) : "";
+
+    $force = 0;
+    if ($force || $debug ) {
+        $tmp[] = "DoQuery: [$query]";
+
+        if (!empty($args)) {
+            $i = 0;
+            foreach ($args as $key => $val) {
+                $v2 = ( strlen($val) < 100 ) ? $val : "blob";
+                $tmp[] = sprintf("arg %d: %s => %s", $i++, $key, $v2);
+            }
+        }
+    }
     
     try {
         if (preg_match("/start transaction/i", $query )) {
@@ -16,19 +32,20 @@ function DoQuery($query) {
             $db->rollBack();
         } else {
             $stmt = $db->prepare($query);
-            if (func_num_args() == 1) {
+            if($numArgs == 1) {
                 $stmt->execute();
             } else {
-                $args = func_get_arg(1);
                 $stmt->execute($args);
             }
             $GLOBALS['gPDO_num_rows'] = $num = $stmt->rowCount();
             $GLOBALS['gPDO_lastInsertID'] = $db->lastInsertID();
+            $tmp[] = sprintf("# rows: %d", $num);
         }
 
     } catch (PDOException $e) {
         echo "<pre>";
-        echo "Query: [$query]\n";
+        echo "*** Error ***\n";
+        print_r($tmp);
         echo $e->getMessage();
         echo "\n";
         echo $e->getTraceAsString();
@@ -37,16 +54,6 @@ function DoQuery($query) {
 
     $force = 0;
     if ($force || $debug ) {
-        $tmp = [];
-        $tmp[] = "DoQuery: [$query]" . sprintf(", # rows: %d", $num);
-
-        if (!empty($args)) {
-            $i = 0;
-            foreach ($args as $key => $val) {
-                $v2 = ( strlen($val) < 100 ) ? $val : "blob";
-                $tmp[] = sprintf("arg %d: %s => %s", $i++, $key, $v2);
-            }
-        }
         Logger($tmp);
     }
     return $stmt;

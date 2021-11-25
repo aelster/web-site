@@ -101,25 +101,41 @@ function Logger() {
     }
 
     if ($gDebug & $gDebugWindow) {
-        $indent = "  ";
+        $indent = "&nbsp;&nbsp;";
         $eol = "\n";
+        $maxlen = 240;
 
         echo "<script type='text/javascript'>" . $eol;
         echo "if( typeof debug === 'function' ) {" . $eol;
         echo "  debug('$indent$prefix');" . $eol;
-        if( $num_args ) { // Implies one or more args
+        if ($num_args) { // Implies one or more args
             $arg = func_get_arg(0);
-            if( is_string($arg) ) {
-                 $str = preg_replace('/\'/', '-', $arg);
-               echo "  debug('$indent$str');" . $eol;
+            if (is_string($arg)) {
+                $str = preg_replace('/\'/', '-', $arg);
+                
+                while (strlen($str) > $maxlen) {
+                    $s = substr($str, 0, $maxlen);
+                    echo "  debug('{$indent}{$s}<br>');" . $eol;
+                    $str = substr($str, $maxlen);   
+                }
+                echo "  debug('{$indent}{$str}');" . $eol;
             } else {
-                foreach( $arg as $msg ) {
+                $pre = "";
+                foreach ($arg as $msg) {
                     $str = preg_replace('/\'/', '-', $msg);
-                    echo "  debug('$indent$str');" . $eol;
+                    while (strlen($str) > $maxlen) {
+                        $j = strrpos($str," ",$maxlen);
+                        $s = substr($str, 0, $j);
+                        echo "  debug('{$pre}{$s}<br>');" . $eol;
+                        $str = substr($str, $j+1);
+                        $pre = $indent;
+                    }
+                    echo "  debug('{$pre}{$str}');" . $eol;
+                    $pre = $indent;
                 }
             }
         }
-        if( $show_traceback ) {
+        if ($show_traceback) {
             echo "  debug('Tracebk: $tb');" . $eol;
         }
         echo "}" . $eol;

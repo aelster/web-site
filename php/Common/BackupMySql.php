@@ -2,7 +2,7 @@
 
 function BackupMySql() {
     // Make sure the required globals exist
-    $required = array('gPDO', 'gSiteDir', 'gId', 'gMailBackup');
+    $required = array('gPDO', 'gSiteDir', 'gSiteSubPath', 'gId', 'gMailBackup');
     foreach ($required as $key) {
         if (!array_key_exists($key, $GLOBALS)) {
             echo "** Global variable [$key] is undefined **";
@@ -28,7 +28,7 @@ function BackupMySql() {
 
     $file = "$gSiteDir/tmp/{$gId}_backup_$dstr.sh";
     $fh = fopen($file, "w");
-    fputs($fh, "#!/bin/bash\n");
+    fputs($fh, "#!/bin/bash -x\n");
     fputs($fh, "cd $gSiteDir/tmp\n");
 
     $tars = [];
@@ -40,20 +40,31 @@ function BackupMySql() {
         $sql_file = "{$obj['dbname']}_$dstr.sql";
         $bck_file = $sql_file . ".bz2";
 
-        fputs($fh, "mysqldump -u {$obj['user']} -p'{$obj['pass']}' {$obj['dbname']} > $sql_file\n");
+        $parts = [];
+        $parts[] = "mysqldump";
+        $parts[] = "--defaults-extra-file=$gSiteDir/$gSiteSubPath/.$gSiteSubPath-dump.cnf";
+        $parts[] = "--compact";
+        $parts[] = "--add-drop-table";
+        $parts[] = "--skip-comments";
+        $parts[] = "--skip-extended-insert";
+        $parts[] = $obj['dbname'];
+        $cmd = implode(" ", $parts) . " 2>&1";
+
+        fputs($fh, "$cmd > $sql_file\n");
         fputs($fh, "tar -cjf $bck_file $sql_file\n");
 
         $tars[] = "-a $bck_file";
         $files_to_delete[] = $sql_file;
-        $files_to_delete[] = $bck_file;
     }
 
     $email = $gMailBackup[0]['email'];
-    fputs($fh, "echo | mailx " . implode(' ', $tars) . " -s \"IHDS " . ucfirst($gId) . " Backups\" " . $email . "\n");
-    fputs($fh, "rm " . implode(" ", $files_to_delete) . "\n");
+    $subject = strtoupper($gSiteSubPath) . " Backups: " . ucfirst($gId);
+    fputs($fh, "echo | mailx " . implode(' ', $tars) . " -s \"$subject\" " . $email . "\n");
+//    fputs($fh, "rm " . implode(" ", $files_to_delete) . "\n");
     fclose($fh);
     chmod($file, 0700);
     exec($file, $output, $retval);
+    unlink($file);
     if ($retval) {
         error_log(print_r($output, true));
     }

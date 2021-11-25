@@ -116,10 +116,14 @@ function SourceDisplay() {
     
     $web_base = "";
     $GLOBALS['gMasterSum'] = 0;
+    $arg1 = $GLOBALS['gFunc'];
+    $arg2 = $GLOBALS['gAction'];
 
     if( ! $gDreamweaver ) {
         $func = $_POST['func'];
-        echo "<input type=button value=Back onclick=\"setValue('from', '$func');addAction('Back');\">";
+        echo "<input type=button value=Back onclick=\"setValue('from', '$func');addAction('main');\">";
+        echo "&nbsp;";
+        echo "<input type=button value=Refresh onclick=\"setValue('from', '$func');setValue('func','$arg1');addAction('$arg2');\">";
     }
     
     $gMasterSum = 0;

@@ -33,10 +33,13 @@ $SourceStuff_FilesRegex = [
     '/php.ini/',
     '/nightly_backup.sh/',
     '/\.pdf$/',
+    '/\.zip$/',
     '/error_log/',
     '/php-errors.log/',
     '/rsync.ignore/',
     '/\.md$/',
     '/\.ste$/',
-    '/\.properties$/'
+    '/\.csv$/',
+    '/\.properties$/',
+	'/\.data$/'
 ];

@@ -25,7 +25,7 @@ function MyDebug() {
             echo "<div class=center>";
             echo "<h2>Debug Control</h2>";
 
-            echo "<input type=button value=Back onclick=\"setValue('from', 'MyDebug');addAction('Back');\">";
+            echo "<input type=button value=Back onclick=\"setValue('from', 'MyDebug');addAction('main');\">";
             echo "<br><br>";
 
             echo "</div>";
@@ -243,11 +243,12 @@ function MyDebug() {
             error_log( "** var: [$var], debug: [$debug] **" );
         }
 
-        $query = "update users set debug = :v1 where userid = :v2";
+        $query = "update users set debug = :v1 where id = :v2";
         DoQuery($query, [':v1' => $debug, ':v2' => $userId]);
 
         $GLOBALS['gDb'] = $save_db;
 
         $GLOBALS['gDebug'] = $debug;
+        $SESSION['debug'] = $debug;
     }
 }

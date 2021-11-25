@@ -58,11 +58,13 @@ function MyMailerNew() {
                 } elseif( $val == "ssl" ) {
                     $mail->SMTPSecure = PHPMailer::ENCRYPTION_SMTPS;
                     $mail->Port = 465;                    
+                } elseif( $val == "n/a" ) {
+                    $mail->Port = 25;
                 }
                 break;
                 
             default:
-                $str = "Invalid Mail Server option [$key]. Aborting ...";
+                $str = "MyMailer: Invalid Mail Server option [$key]. Aborting ...";
                 error_log($str);
                 Logger($str);
                 echo "$str<br>";

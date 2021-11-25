@@ -1,9 +1,7 @@
-backup_sql
-bin
-*.komodo*
-local_*.php
-.DS_store
-*.bz
-*~
-/nbproject/*
-/php/Common/nbproject/private/
+# Directories
+!php/
+
+# Files
+*
+!README.md
+!.gitignore
